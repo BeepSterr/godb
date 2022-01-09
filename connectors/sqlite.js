@@ -74,8 +74,6 @@ module.exports = class Sqlite extends Connector {
      */
     initStore(Model){
 
-        console.log(`Store initialization for ${Model.table}`)
-
         let me = this;
         this.#connection.schema.hasTable(Model.table).then(function(success){
             if(!success){
@@ -178,6 +176,20 @@ module.exports = class Sqlite extends Connector {
         });
     }
 
+    async getByField(Model, field, value, deleted = false){
+
+        let where = {
+            deleted: deleted ? 1 : 0
+        };
+        where[field] = value;
+        return this.#connection.table(Model.table).where(where);
+    }
+
+    async find(Model, where, deleted = false){
+        where['deleted'] = deleted ? 1 : 0;
+        return this.#connection.table(Model.table).where(where);
+    }
+
     /**
      *
      * @param Model Storable
@@ -246,7 +258,6 @@ module.exports = class Sqlite extends Connector {
                 .where({ id: object.id })
                 .update(newValues);
 
-            console.log('save yes', newValues, object.constructor.table);
             return true;
 
 
@@ -260,7 +271,6 @@ module.exports = class Sqlite extends Connector {
             await this.#connection.table(object.constructor.table)
                 .insert(newValues);
 
-            console.log('save yes', newValues, object.constructor.table);
             return true;
 
         }

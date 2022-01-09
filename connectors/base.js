@@ -14,12 +14,28 @@ module.exports =  class Connector {
         throw new InvalidConnectorException(input);
     }
 
-    async *search(Model, filter, group){
-        throw new InvalidConnectorException(Model);
+    async #test(){
+        return false;
     }
-    
-    async save(object){
-        throw new InvalidConnectorException(object);
+
+    async *search(){
+        throw new InvalidConnectorException();
+    }
+
+    async getByID(){
+        throw new InvalidConnectorException();
+    }
+
+    async getByField(){
+        throw new InvalidConnectorException();
+    }
+
+    async find(){
+        throw new InvalidConnectorException();
+    }
+
+    async save(){
+        throw new InvalidConnectorException();
     }
 
 }
