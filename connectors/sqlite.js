@@ -185,6 +185,15 @@ module.exports = class Sqlite extends Connector {
         return this.#connection.table(Model.table).where(where);
     }
 
+    async loadBy(Model, Where, deleted = false){
+        const query = this.#connection.table(Model.table)
+
+        for(const obj in Where){
+            console.log(obj);
+        }
+
+    }
+
     async find(Model, where, deleted = false){
         where['deleted'] = deleted ? 1 : 0;
         return this.#connection.table(Model.table).where(where);

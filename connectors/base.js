@@ -30,6 +30,10 @@ module.exports =  class Connector {
         throw new InvalidConnectorException();
     }
 
+    async loadBy(){
+        throw new InvalidConnectorException();
+    }
+
     async find(){
         throw new InvalidConnectorException();
     }
