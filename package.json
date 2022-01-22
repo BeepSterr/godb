@@ -19,7 +19,7 @@
   "dependencies": {
     "knex": "^0.95.15",
     "mysql": "^2.18.1",
-    "nanoid": "^3.1.30",
+    "nanoid": "^3.1.31",
     "sqlite": "^4.0.23"
   }
 }
