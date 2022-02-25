@@ -3,12 +3,12 @@ const Path = require('path');
 const Connector = require('./base');
 const Storable = require("../utilities/storable");
 const {InvalidArgumentError} = require("../utilities/errors");
+const {nanoid} = require("nanoid");
 const Collection = require("../utilities/collection");
-const Sqlite = require("./Sqlbased");
 
-module.exports = class Mysql extends Sqlite {
+module.exports = class Sqlbased extends Connector {
 
-    #connection;
+    connection;
 
     // Types used by the database
     types = {
@@ -48,41 +48,14 @@ module.exports = class Mysql extends Sqlite {
 
     constructor(){
         super();
-        this.createDatabase();
-        this.#test();
     }
 
     createDatabase(){
-        this.#connection = new Knex({
-            client: 'sqlite3',
-            connection: {
-                filename: Path.join(process.cwd(), 'database.db'),
-                flags: ['OPEN_URI', 'OPEN_SHAREDCACHE']
-            },
-            useNullAsDefault: true,
-            postProcessResponse: (result, queryContext) => {
-
-                if(!queryContext){
-                    return result;
-                }
-
-                if (Array.isArray(result)) {
-                    let list = new Collection(queryContext);
-                    result.forEach( res => {
-                        const obj = queryContext.fromResultSet(res)
-                        list.set(obj.id, obj);
-                    });
-                    return list;
-                } else {
-                    return queryContext.fromResultSet(result);
-                }
-            }
-        });
-
+        this.connection = new Knex();
     }
 
     async #test(){
-        return await this.#connection.raw('SELECT 1+1')['1+1'] === 2;
+        return await this.connection.raw('SELECT 1+1')['1+1'] === 2;
     }
     /**
      * @param Model ../storable.js
@@ -91,7 +64,7 @@ module.exports = class Mysql extends Sqlite {
     initStore(Model){
 
         let me = this;
-        this.#connection.schema.hasTable(Model.table).then(function(success){
+        this.connection.schema.hasTable(Model.table).then(function(success){
             if(!success){
                 me.#createTableSchema(Model);
             }else{
@@ -106,7 +79,7 @@ module.exports = class Mysql extends Sqlite {
      */
     async #createTableSchema(Model){
         let me = this;
-        return this.#connection.schema.createTable(`${Model.table}`, async function (table) {
+        return this.connection.schema.createTable(`${Model.table}`, async function (table) {
             table = me.buildTable(Model, table, [], false);
             return table;
         });
@@ -119,7 +92,7 @@ module.exports = class Mysql extends Sqlite {
         let me = this;
         let createdColumns = await this.getCreatedColumns(Model);
 
-        return this.#connection.schema.table(`${Model.table}`, async function (table) {
+        return this.connection.schema.table(`${Model.table}`, async function (table) {
             table = me.buildTable(Model, table, createdColumns, true);
             return table;
         })
@@ -131,7 +104,7 @@ module.exports = class Mysql extends Sqlite {
         let cc = [];
         for(let b = 0; b < columns.length;b++){
             const column = columns[b]
-            let exists = await this.#connection.schema.hasColumn(Model.table, column.name);
+            let exists = await this.connection.schema.hasColumn(Model.table, column.name);
             if(exists){
                 cc.push(column.name);
             }
@@ -182,7 +155,7 @@ module.exports = class Mysql extends Sqlite {
     }
 
     async getByID(Model, Id, deleted = false){
-        return this.#connection.table(Model.table).where({
+        return this.connection.table(Model.table).where({
             id: Id,
             deleted: deleted ? 1 : 0
         }).queryContext(Model);
@@ -194,16 +167,21 @@ module.exports = class Mysql extends Sqlite {
             deleted: deleted ? 1 : 0
         };
         where[field] = value;
-        return this.#connection.table(Model.table).where(where).queryContext(Model);
+        return this.connection.table(Model.table).where(where).queryContext(Model);
     }
 
     async loadBy(Model, Where, deleted = false){
-        return this.#connection.table(Model.table).queryContext(Model);
-    }
 
-    async find(Model, where, deleted = false){
-        where['deleted'] = deleted ? 1 : 0;
-        return this.#connection.table(Model.table).where(where).queryContext(Model);
+        let q = this.connection.table(Model.table).queryContext(Model);
+        if(!deleted){
+            q = q.andWhere('deleted', 0);
+        }
+        Where.forEach( w => {
+            q = q.andWhere(w.field, w.operator, w.value);
+        })
+
+        return q;
+
     }
 
     /**
@@ -222,7 +200,7 @@ module.exports = class Mysql extends Sqlite {
         let queryResult;
        while(resultCount >= limit){
 
-           queryResult = await this.#connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
+           queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
            resultCount = queryResult.length;
            if(resultCount > 0){
                offset = queryResult[resultCount-1].updatedon;
@@ -270,7 +248,7 @@ module.exports = class Mysql extends Sqlite {
         if(object.id !== null){
 
             // update records
-            await this.#connection.table(object.constructor.table)
+            await this.connection.table(object.constructor.table)
                 .where({ id: object.id })
                 .update(newValues).queryContext(object.constructor);
 
@@ -284,7 +262,7 @@ module.exports = class Mysql extends Sqlite {
             object.id = newValues['id'];
 
             // create record
-            await this.#connection.table(object.constructor.table)
+            await this.connection.table(object.constructor.table)
                 .insert(newValues).queryContext(object.constructor);
 
             return true;

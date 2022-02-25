@@ -1,6 +1,9 @@
 module.exports = {
-    storable: require('./storable'),
+
+    storable: require('./utilities/storable'),
+    collection: require('./utilities/collection'),
+
     baseConnector: require('./connectors/base'),
-    sqlite: require('./connectors/sqlite'),
-    mysql: require('./connectors/mysql'),
+    sqlbased: require('./connectors/Sqlbased'),
+    sqlite: require('./connectors/Sqlite'),
 }

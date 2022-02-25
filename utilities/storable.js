@@ -1,4 +1,4 @@
-const {nanoid} = require("nanoid");
+const {IllegalModificationException} = require("./errors");
 module.exports = class Storable {
 
     static get table(){
@@ -7,7 +7,7 @@ module.exports = class Storable {
 
     static generateID(){
         const { customAlphabet } = require('nanoid');
-        const alphabet = '0123456789abcdefghijklmnopqrstuvwxyz';
+        const alphabet = '0123456789abcdefghjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const nanoid = customAlphabet(alphabet, 16);
         return nanoid();
     }
@@ -46,6 +46,9 @@ module.exports = class Storable {
 
     set id(v){
         this.changed = true;
+        if(this.#id !== null){
+            throw new IllegalModificationException(this, 'id');
+        }
         this.#id = v;
     }
 
@@ -80,6 +83,16 @@ module.exports = class Storable {
             this.changed = true;
             this.#deleted = !!v;
         }
+    }
+
+    static fromResultSet(result){
+        let x = new this;
+        Object.assign(x, result);
+        return x;
+    }
+
+    toString(){
+        return `[${this.constructor.table} ${this.id}]`
     }
 
 }

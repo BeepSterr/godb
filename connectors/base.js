@@ -1,45 +1,51 @@
-const {InvalidConnectorException} = require("../errors");
+const {InvalidConnectorException, InvalidArgumentError} = require("../utilities/errors");
+const Storable = require("../utilities/storable");
+const Collection = require("../utilities/collection");
+
 module.exports =  class Connector {
+
+    /*
+        This is the base Connector class, This class defines the API Connectors should implement.
+        Please extend this class with your own connectors.
+     */
 
     #connection;
 
     types = {}
     validators = {}
 
-    async initStore(input){
-        /*
-            If you're reading this you've accidentally imported the base Connector class instead of
-            one based on your Database. Implementations can be found in the directory of this file.
-         */
-        throw new InvalidConnectorException(input);
+    get COMPARE(){
+        return {
+            NOT: '!=',
+            EQUALS: '=',
+            LIKE: 'like',
+            IN: 'in',
+            NOT_IN: 'in',
+            GREATER_THAN: '>',
+            SMALLER_THAN: '<',
+        }
     }
 
-    async #test(){
+
+    /**
+     * Initialized a Storable object to be used in this connector
+     * @returns boolean promise<boolean>
+     * @param input [Storable]
+     */
+    async initializeModels(input){
         return false;
     }
 
-    async *search(){
-        throw new InvalidConnectorException();
+    /**
+     * Loads a single Storable instance based on its ID
+     * @returns {Promise<Storable>}
+     */
+    async getById(Store, id){
+        return new Store();
     }
 
-    async getByID(){
-        throw new InvalidConnectorException();
-    }
-
-    async getByField(){
-        throw new InvalidConnectorException();
-    }
-
-    async loadBy(){
-        throw new InvalidConnectorException();
-    }
-
-    async find(){
-        throw new InvalidConnectorException();
-    }
-
-    async save(){
-        throw new InvalidConnectorException();
+    async save(object){
+        return false;
     }
 
 }
