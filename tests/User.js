@@ -1,5 +1,4 @@
 const Storable = require("../utilities/storable");
-const {customAlphabet} = require("nanoid");
 module.exports = class User extends Storable {
 
     static get table(){
@@ -14,7 +13,7 @@ module.exports = class User extends Storable {
      */
     static defineColumns(Connector){
         return [
-            { name: 'username', field: 'username',type: Connector.types[Connector.types.string], primary: false },
+            { name: 'username', field: 'username',type: Connector.types.string, primary: false },
             ...super.defineColumns(Connector)
         ];
     }
@@ -27,10 +26,6 @@ module.exports = class User extends Storable {
     set username(v){
         this.changed = true;
         this.#username = v;
-    }
-
-    toString(){
-        return `@${this.username}`
     }
 
 }

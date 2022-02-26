@@ -51,26 +51,23 @@ module.exports = class Sqlbased extends Connector {
     }
 
     createDatabase(){
-        this.connection = new Knex();
+        //this.connection = new Knex();
     }
 
-    async #test(){
-        return await this.connection.raw('SELECT 1+1')['1+1'] === 2;
-    }
     /**
      * @param Model ../storable.js
      * @returns {Promise<void>}
      */
-    initStore(Model){
+    async initStore(Model){
 
         let me = this;
-        this.connection.schema.hasTable(Model.table).then(function(success){
+        this.connection.schema.hasTable(Model.table).then(async function(success){
             if(!success){
-                me.#createTableSchema(Model);
+                await me.#createTableSchema(Model);
             }else{
-                me.#updateTableSchema(Model);
+                await me.#updateTableSchema(Model);
             }
-        })
+        });
 
     }
     /**
@@ -80,8 +77,7 @@ module.exports = class Sqlbased extends Connector {
     async #createTableSchema(Model){
         let me = this;
         return this.connection.schema.createTable(`${Model.table}`, async function (table) {
-            table = me.buildTable(Model, table, [], false);
-            return table;
+            return me.buildTable(Model, table, [], false);
         });
     }
     /**
@@ -92,9 +88,8 @@ module.exports = class Sqlbased extends Connector {
         let me = this;
         let createdColumns = await this.getCreatedColumns(Model);
 
-        return this.connection.schema.table(`${Model.table}`, async function (table) {
-            table = me.buildTable(Model, table, createdColumns, true);
-            return table;
+        return this.connection.schema.table(`${Model.table}`, function (table) {
+            return me.buildTable(Model, table, createdColumns, true);
         })
     }
     async getCreatedColumns(Model){
@@ -119,19 +114,19 @@ module.exports = class Sqlbased extends Connector {
 
         for(let b = 0; b < columns.length;b++){
 
-            const column = columns[b]
+            const column = columns[b];
 
             // create base column type with limit if possible.
             let col = tableBuilder.specificType(column.name, column.type);
 
             column.nullable ? col.nullable() : col.notNullable();
 
-            if(column.primary === true){
-                col.primary(`primary_${column.name}`);
+            if(column.primary === true && !cc.includes(column.name)){
+                col.primary()
             }
 
             if(column.index){
-                col.index(`x${column.index}`);
+                col.index(`idx${column.index}`);
             }
 
             if(column.references  && column.references.prototype instanceof Storable){

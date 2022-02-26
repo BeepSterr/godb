@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/beepsdev/godb#readme",
   "dependencies": {
-    "knex": "^0.95.15",
+    "knex": "^1.0.3",
     "nanoid": "^3.1.31"
   },
   "devDependencies": {

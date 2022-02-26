@@ -92,7 +92,7 @@ module.exports = class Storable {
     }
 
     toString(){
-        return `[${this.constructor.table} ${this.id}]`
+        return `{${this.constructor.name}/${this.id}}`
     }
 
 }
