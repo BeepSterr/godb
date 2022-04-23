@@ -193,22 +193,41 @@ module.exports = class Sqlbased extends Connector {
         let offset = 0;
 
         let queryResult;
-       while(resultCount >= limit){
+        while(resultCount >= limit){
 
-           queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
-           resultCount = queryResult.length;
-           if(resultCount > 0){
-               offset = queryResult[resultCount-1].updatedon;
-           }
+            queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
+            resultCount = queryResult.length;
+            if(resultCount > 0){
+                offset = queryResult[resultCount-1].updatedon;
+            }
 
-           if(resultCount >= limit){
-               yield {result: queryResult, currentOffset: offset, count: resultCount};
-           }else{
-               return {result: queryResult, currentOffset: offset, count: resultCount};
-           }
+            if(resultCount >= limit){
+                yield {result: queryResult, currentOffset: offset, count: resultCount};
+            }else{
+                return {result: queryResult, currentOffset: offset, count: resultCount};
+            }
 
-       }
+        }
 
+    }
+
+    /**
+     *
+     * @param Model Storable
+     * @param filter [{{field: String, operation: String, value: *}}]
+     * @param limit Number
+     * @param offset
+     * @param countField String
+     * @returns Collection
+     */
+    async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
+        let q = this.connection.table(Model.table).where(filter).limit(limit).offset(offset).queryContext(Model);
+
+        filter.forEach( w => {
+            q = q.andWhere(w.field, w.operator, w.value);
+        })
+
+        return q;
     }
 
     /**
