@@ -40,7 +40,7 @@ module.exports =  class Connector {
      * Loads a single Storable instance based on its ID
      * @returns {Promise<Storable>}
      */
-    async getById(Store, id){
+    async getByID(Store, id, deleted = false){
         return new Store();
     }
 
