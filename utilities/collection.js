@@ -36,5 +36,13 @@ module.exports = class Collection extends Map {
         return [...this.values()];
     }
 
+    toFeed(req){
+        const data = [];
+        this.toArray().forEach( item => {
+            data.push(item.toFeed(req));
+        })
+        return data;
+    }
+
 
 }
