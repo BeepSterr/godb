@@ -221,7 +221,7 @@ module.exports = class Sqlbased extends Connector {
      * @returns Collection
      */
     async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
-        let q = this.connection.table(Model.table).where(filter).limit(limit).offset(offset).queryContext(Model);
+        let q = this.connection.table(Model.table).limit(limit).offset(offset).queryContext(Model);
 
         filter.forEach( w => {
             q = q.andWhere(w.field, w.operator, w.value);
