@@ -1,4 +1,5 @@
 const {IllegalModificationException} = require("./errors");
+
 module.exports = class Storable {
 
     static get table(){
@@ -85,9 +86,16 @@ module.exports = class Storable {
         }
     }
 
-    static fromResultSet(result){
+    static async fromResultSet(resultSet, Connector){
+
         let x = new this;
-        Object.assign(x, result);
+        const columns = this.defineColumns(Connector);
+
+        for(let cid in columns){
+            let column = columns[cid];
+            x[column.field] = await column.type.expander(resultSet[column.name]);
+        }
+
         return x;
     }
 

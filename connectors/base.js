@@ -13,6 +13,7 @@ module.exports =  class Connector {
 
     types = {}
     validators = {}
+    expanders = {}
 
     get COMPARE(){
         return {

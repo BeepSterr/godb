@@ -12,24 +12,50 @@ module.exports = class Sqlbased extends Connector {
 
     // Types used by the database
     types = {
-        id: 'VARCHAR(255)',
-        string: 'VARCHAR(255)',
-        text: 'TEXT',
-        int: 'INTEGER',
-        boolean: 'BOOLEAN',
-        date: 'DATETIME'
+        id: {
+            db_type: 'VARCHAR(255)',
+            validator: Sqlbased.validators.string,
+            expander: Sqlbased.expanders.string
+        },
+        string: {
+            db_type: 'VARCHAR(255)',
+            validator: Sqlbased.validators.string,
+            expander: Sqlbased.expanders.string
+        },
+        text: {
+            db_type: 'TEXT',
+            validator: Sqlbased.validators.string,
+            expander: Sqlbased.expanders.string
+        },
+        json: {
+            db_type: 'TEXT',
+            validator: Sqlbased.validators.json,
+            expander: Sqlbased.expanders.json
+        },
+        int: {
+            db_type: 'INTEGER',
+            validator: Sqlbased.validators.int,
+            expander: Sqlbased.expanders.int
+        },
+        boolean: {
+            db_type: 'BOOLEAN',
+            validator: Sqlbased.validators.boolean,
+            expander: Sqlbased.expanders.boolean
+        },
+        date: {
+            db_type: 'DATETIME',
+            validator: Sqlbased.validators.datetime,
+            expander: Sqlbased.expanders.datetime
+        }
     }
 
     // TODO: Add proper data validators, these are placeholders
-    validators = {
+    static validators = {
         string: async function(input){
             return String(input);
         },
-        text: async function(input){
-            return String(input);
-        },
-        id: async function(input){
-            return String(input);
+        json: async function(input){
+            return JSON.stringify(input);
         },
         int: async function(input){
             return Number(input).toFixed(0);
@@ -43,6 +69,24 @@ module.exports = class Sqlbased extends Connector {
             }else{
                 return new Date(input);
             }
+        },
+    }
+
+    static expanders = {
+        string: async function(input){
+            return String(input);
+        },
+        json: async function(input){
+            return JSON.parse(input);
+        },
+        int: async function(input){
+            return Number(input).toFixed(0);
+        },
+        boolean: async function(input){
+            return !!input;
+        },
+        datetime: async function(input){
+            return new Date(input);
         },
     }
 
@@ -117,7 +161,7 @@ module.exports = class Sqlbased extends Connector {
             const column = columns[b];
 
             // create base column type with limit if possible.
-            let col = tableBuilder.specificType(column.name, column.type);
+            let col = tableBuilder.specificType(column.name, column.type.db_type);
 
             column.nullable ? col.nullable() : col.notNullable();
 
@@ -254,18 +298,17 @@ module.exports = class Sqlbased extends Connector {
             object.createdon = new Date();
         }
 
-        // add all fields via their getters
-        fields.forEach((field)=> {
-            newValues[field.name] = object[field.field];
-        })
-
+        for(let field in fields){
+            const cc = fields[field];
+            newValues[cc.name] = await cc.type.validator(object[cc.field]);
+        }
 
         if(object.id !== null){
 
             // update records
             await this.connection.table(object.constructor.table)
                 .where({ id: object.id })
-                .update(newValues).queryContext(object.constructor);
+                .update(newValues);
 
             return true;
 
@@ -278,7 +321,7 @@ module.exports = class Sqlbased extends Connector {
 
             // create record
             await this.connection.table(object.constructor.table)
-                .insert(newValues).queryContext(object.constructor);
+                .insert(newValues);
 
             return true;
 

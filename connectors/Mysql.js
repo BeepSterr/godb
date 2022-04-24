@@ -4,9 +4,9 @@ const Connector = require('./base');
 const Storable = require("../utilities/storable");
 const {InvalidArgumentError} = require("../utilities/errors");
 const Collection = require("../utilities/collection");
-const Sqlite = require("./Sqlbased");
+const Sqlbased = require("./Sqlbased");
 
-module.exports = class Mysql extends Sqlite {
+module.exports = class Mysql extends Sqlbased {
 
     constructor(opts) {
         super();
@@ -24,21 +24,21 @@ module.exports = class Mysql extends Sqlite {
                 database : opts.db
             },
             useNullAsDefault: true,
-            postProcessResponse: (result, queryContext) => {
+            postProcessResponse: async (result, queryContext) => {
 
-                if(!queryContext){
+                if (!queryContext) {
                     return result;
                 }
 
                 if (Array.isArray(result)) {
                     let list = new Collection(queryContext);
-                    result.forEach( res => {
-                        const obj = queryContext.fromResultSet(res)
+                    for (const res of result) {
+                        const obj = await queryContext.fromResultSet(res, this)
                         list.set(obj.id, obj);
-                    });
+                    }
                     return list;
                 } else {
-                    return queryContext.fromResultSet(result);
+                    return await queryContext.fromResultSet(result, this);
                 }
             }
         });

@@ -22,21 +22,21 @@ module.exports = class Sqlite extends Sqlbased {
                 flags: ['OPEN_URI', 'OPEN_SHAREDCACHE']
             },
             useNullAsDefault: true,
-            postProcessResponse: (result, queryContext) => {
+            postProcessResponse: async (result, queryContext) => {
 
-                if(!queryContext){
+                if (!queryContext) {
                     return result;
                 }
 
                 if (Array.isArray(result)) {
                     let list = new Collection(queryContext);
-                    result.forEach( res => {
-                        const obj = queryContext.fromResultSet(res)
+                    for (const res of result) {
+                        const obj = await queryContext.fromResultSet(res, this);
                         list.set(obj.id, obj);
-                    });
+                    }
                     return list;
                 } else {
-                    return queryContext.fromResultSet(result);
+                    return await queryContext.fromResultSet(result, this);
                 }
             }
         });
