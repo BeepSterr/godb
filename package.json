@@ -1,6 +1,6 @@
 {
   "name": "@beepsdev/godb",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "database model management and enforcer",
   "main": "index.js",
   "publishConfig": {
