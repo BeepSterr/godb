@@ -150,10 +150,11 @@ module.exports = class Sqlbased extends Connector {
     }
 
     async getByID(Model, Id, deleted = false){
-        return this.connection.table(Model.table).where({
+        const col = await this.connection.table(Model.table).where({
             id: Id,
             deleted: deleted ? 1 : 0
         }).queryContext(Model);
+        return col.first;
     }
 
     async getByField(Model, field, value, deleted = false){
