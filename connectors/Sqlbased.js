@@ -9,6 +9,7 @@ const Collection = require("../utilities/collection");
 module.exports = class Sqlbased extends Connector {
 
     connection;
+    connected = false;
 
     // Types used by the database
     types = {
@@ -120,9 +121,14 @@ module.exports = class Sqlbased extends Connector {
      */
     async #createTableSchema(Model){
         let me = this;
-        return this.connection.schema.createTable(`${Model.table}`, async function (table) {
-            return me.buildTable(Model, table, [], false);
-        });
+        try{
+            return this.connection.schema.createTable(`${Model.table}`, async function (table) {
+                return me.buildTable(Model, table, [], false);
+            });
+        }
+        catch(ex){
+            return null;
+        }
     }
     /**
      *
@@ -173,7 +179,11 @@ module.exports = class Sqlbased extends Connector {
                 col.index(`idx${column.index}`);
             }
 
-            if(column.references  && column.references.prototype instanceof Storable){
+            if(typeof column.default !== 'undefined'){
+                col.defaultTo(column.default);
+            }
+
+            if(column.references && column.references.prototype instanceof Storable){
 
                 let ref_field = column.reference_field;
                 if(!column.reference_field){
@@ -193,6 +203,13 @@ module.exports = class Sqlbased extends Connector {
         return tableBuilder;
     }
 
+    /**
+     *
+     * @param Model
+     * @param Id
+     * @param deleted
+     * @returns {Promise<Storable>}
+     */
     async getByID(Model, Id, deleted = false){
         const col = await this.connection.table(Model.table).where({
             id: Id,
@@ -270,7 +287,26 @@ module.exports = class Sqlbased extends Connector {
 
         filter.forEach( w => {
             q = q.andWhere(w.field, w.operator, w.value);
-        })
+        });
+
+        return q;
+    }
+
+    /**
+     *
+     * @param Model Storable
+     * @param filter [{{field: String, operation: String, value: *}}]
+     * @param limit Number
+     * @param offset
+     * @param countField String
+     * @returns Collection
+     */
+    async simpleCount(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
+        let q = this.connection.count(`id`).table(Model.table).limit(limit).offset(offset);
+
+        filter.forEach( w => {
+            q = q.andWhere(w.field, w.operator, w.value);
+        });
 
         return q;
     }
@@ -282,7 +318,7 @@ module.exports = class Sqlbased extends Connector {
     async save(object){
 
         if(!(object instanceof Storable)){
-            throw new InvalidArgumentError(object, Storable);
+            //throw new InvalidArgumentError(object, Storable);
         }
 
         if(!object.changed){
@@ -300,7 +336,9 @@ module.exports = class Sqlbased extends Connector {
 
         for(let field in fields){
             const cc = fields[field];
-            newValues[cc.name] = await cc.type.validator(object[cc.field]);
+            if(cc && cc.type){
+                newValues[cc.name] = await cc.type.validator(object[cc.field]);
+            }
         }
 
         if(object.id !== null){
