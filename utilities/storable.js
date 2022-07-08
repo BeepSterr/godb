@@ -93,7 +93,9 @@ module.exports = class Storable {
 
         for(let cid in columns){
             let column = columns[cid];
-            x[column.field] = await column.type.expander(resultSet[column.name]);
+            if(column && column.type){
+                x[column.field] = await column.type.expander(resultSet[column.name]);
+            }
         }
 
         return x;

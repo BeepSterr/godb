@@ -21,7 +21,8 @@ module.exports = class Mysql extends Sqlbased {
                 port : opts.port || 3306,
                 user : opts.user,
                 password : opts.password,
-                database : opts.db
+                database : opts.db,
+                ssl: opts.ssl || false,
             },
             useNullAsDefault: true,
             postProcessResponse: async (result, queryContext) => {
@@ -42,6 +43,10 @@ module.exports = class Mysql extends Sqlbased {
                 }
             }
         });
+
+        this.connection.raw('SELECT 1+1').then( data => {
+            this.connected = true;
+        })
 
     }
 
