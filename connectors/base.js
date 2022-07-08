@@ -20,6 +20,7 @@ module.exports =  class Connector {
             NOT: '!=',
             EQUALS: '=',
             LIKE: 'like',
+            NOT_LIKE: 'not like',
             IN: 'in',
             NOT_IN: 'in',
             GREATER_THAN: '>',
