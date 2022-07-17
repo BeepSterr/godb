@@ -2,7 +2,7 @@ module.exports = {
 
     connection: false,
     setConnection: function(c){
-        if(c instanceof require('./connectors/base')){
+        if(c instanceof require('./connectors/Base')){
             this.connection = c;
         }else{
             throw new Error('Connection can only be set to instance of baseConnector')

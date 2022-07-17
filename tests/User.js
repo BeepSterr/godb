@@ -8,7 +8,7 @@ module.exports = class User extends Storable {
 
     /**
      *
-     * @param Connector ../base.js
+     * @param Connector ../Base.js
      * @returns {[{field: string, name: string, type: *, nullable: ?boolean, references: ?Storable, reference_field: ?String, primary: ?Boolean}]}
      */
     static defineColumns(Connector){

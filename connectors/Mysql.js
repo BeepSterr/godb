@@ -1,5 +1,5 @@
 const Knex = require('knex');
-const Collection = require("../utilities/collection");
+const Collection = require("../utilities/Collection");
 const Sqlbased = require("./Sqlbased");
 
 module.exports = class Mysql extends Sqlbased {
