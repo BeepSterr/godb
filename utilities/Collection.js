@@ -1,4 +1,4 @@
-const {InvalidCollectionEntry, InvalidCollectionType} = require("./errors");
+const {InvalidCollectionEntry, InvalidCollectionType} = require("./Errors");
 
 module.exports = class Collection extends Map {
 

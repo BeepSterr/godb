@@ -1,4 +1,4 @@
-const Storable = require("../utilities/storable");
+const Storable = require("../utilities/Storable");
 module.exports = class User extends Storable {
 
     static get table(){

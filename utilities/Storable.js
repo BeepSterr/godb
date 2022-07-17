@@ -1,4 +1,4 @@
-const {IllegalModificationException} = require("./errors");
+const {IllegalModificationException} = require("./Errors");
 module.exports = class Storable {
 
     static get table(){

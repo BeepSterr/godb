@@ -1,4 +1,4 @@
-const Collection = require('../utilities/collection');
+const Collection = require('../utilities/Collection');
 const User = require("./User");
 
 class CorrectType {

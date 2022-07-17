@@ -1,10 +1,6 @@
 const Knex = require('knex');
 const Path = require('path');
-const Connector = require('./base');
-const Storable = require("../utilities/storable");
-const {InvalidArgumentError} = require("../utilities/errors");
-const {nanoid} = require("nanoid");
-const Collection = require("../utilities/collection");
+const Collection = require("../utilities/Collection");
 const Sqlbased = require("./Sqlbased");
 
 module.exports = class Sqlite extends Sqlbased {

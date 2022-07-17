@@ -1,9 +1,5 @@
 const Knex = require('knex');
-const Path = require('path');
-const Connector = require('./base');
-const Storable = require("../utilities/storable");
-const {InvalidArgumentError} = require("../utilities/errors");
-const Collection = require("../utilities/collection");
+const Collection = require("../utilities/Collection");
 const Sqlite = require("./Sqlbased");
 
 module.exports = class Mysql extends Sqlite {

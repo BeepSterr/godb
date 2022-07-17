@@ -1,7 +1,3 @@
-const {InvalidConnectorException, InvalidArgumentError} = require("../utilities/errors");
-const Storable = require("../utilities/storable");
-const Collection = require("../utilities/collection");
-
 module.exports =  class Connector {
 
     /*
