@@ -4,27 +4,54 @@ const {InvalidArgumentError} = require("../utilities/Errors");
 module.exports = class Sqlbased extends Connector {
 
     connection;
+    connected = false;
 
     // Types used by the database
     types = {
-        id: 'VARCHAR(255)',
-        string: 'VARCHAR(255)',
-        text: 'TEXT',
-        int: 'INTEGER',
-        boolean: 'BOOLEAN',
-        date: 'DATETIME'
+        id: {
+            db_type: 'VARCHAR(255)',
+            validator: Sqlbased.validators.string,
+            expander: Sqlbased.expanders.string
+        },
+        string: {
+            db_type: 'VARCHAR(255)',
+            validator: Sqlbased.validators.string,
+            expander: Sqlbased.expanders.string
+        },
+        text: {
+            db_type: 'TEXT',
+            validator: Sqlbased.validators.string,
+            expander: Sqlbased.expanders.string
+        },
+        json: {
+            db_type: 'TEXT',
+            validator: Sqlbased.validators.json,
+            expander: Sqlbased.expanders.json
+        },
+        int: {
+            db_type: 'INTEGER',
+            validator: Sqlbased.validators.int,
+            expander: Sqlbased.expanders.int
+        },
+        boolean: {
+            db_type: 'BOOLEAN',
+            validator: Sqlbased.validators.boolean,
+            expander: Sqlbased.expanders.boolean
+        },
+        date: {
+            db_type: 'DATETIME',
+            validator: Sqlbased.validators.datetime,
+            expander: Sqlbased.expanders.datetime
+        }
     }
 
     // TODO: Add proper data validators, these are placeholders
-    validators = {
+    static validators = {
         string: async function(input){
             return String(input);
         },
-        text: async function(input){
-            return String(input);
-        },
-        id: async function(input){
-            return String(input);
+        json: async function(input){
+            return JSON.stringify(input);
         },
         int: async function(input){
             return Number(input).toFixed(0);
@@ -38,6 +65,24 @@ module.exports = class Sqlbased extends Connector {
             }else{
                 return new Date(input);
             }
+        },
+    }
+
+    static expanders = {
+        string: async function(input){
+            return String(input);
+        },
+        json: async function(input){
+            return JSON.parse(input);
+        },
+        int: async function(input){
+            return Number(input).toFixed(0);
+        },
+        boolean: async function(input){
+            return !!input;
+        },
+        datetime: async function(input){
+            return new Date(input);
         },
     }
 
@@ -71,9 +116,14 @@ module.exports = class Sqlbased extends Connector {
      */
     async #createTableSchema(Model){
         let me = this;
-        return this.connection.schema.createTable(`${Model.table}`, async function (table) {
-            return me.buildTable(Model, table, [], false);
-        });
+        try{
+            return this.connection.schema.createTable(`${Model.table}`, async function (table) {
+                return me.buildTable(Model, table, [], false);
+            });
+        }
+        catch(ex){
+            return null;
+        }
     }
     /**
      *
@@ -112,7 +162,7 @@ module.exports = class Sqlbased extends Connector {
             const column = columns[b];
 
             // create base column type with limit if possible.
-            let col = tableBuilder.specificType(column.name, column.type);
+            let col = tableBuilder.specificType(column.name, column.type.db_type);
 
             column.nullable ? col.nullable() : col.notNullable();
 
@@ -124,7 +174,11 @@ module.exports = class Sqlbased extends Connector {
                 col.index(`idx${column.index}`);
             }
 
-            if(column.references  && column.references.prototype instanceof Storable){
+            if(typeof column.default !== 'undefined'){
+                col.defaultTo(column.default);
+            }
+
+            if(column.references && column.references.prototype instanceof Storable){
 
                 let ref_field = column.reference_field;
                 if(!column.reference_field){
@@ -144,11 +198,19 @@ module.exports = class Sqlbased extends Connector {
         return tableBuilder;
     }
 
+    /**
+     *
+     * @param Model
+     * @param Id
+     * @param deleted
+     * @returns {Promise<Storable>}
+     */
     async getByID(Model, Id, deleted = false){
-        return this.connection.table(Model.table).where({
+        const col = await this.connection.table(Model.table).where({
             id: Id,
             deleted: deleted ? 1 : 0
         }).queryContext(Model);
+        return col.first;
     }
 
     async getByField(Model, field, value, deleted = false){
@@ -188,22 +250,60 @@ module.exports = class Sqlbased extends Connector {
         let offset = 0;
 
         let queryResult;
-       while(resultCount >= limit){
+        while(resultCount >= limit){
 
-           queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
-           resultCount = queryResult.length;
-           if(resultCount > 0){
-               offset = queryResult[resultCount-1].updatedon;
-           }
+            queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
+            resultCount = queryResult.length;
+            if(resultCount > 0){
+                offset = queryResult[resultCount-1].updatedon;
+            }
 
-           if(resultCount >= limit){
-               yield {result: queryResult, currentOffset: offset, count: resultCount};
-           }else{
-               return {result: queryResult, currentOffset: offset, count: resultCount};
-           }
+            if(resultCount >= limit){
+                yield {result: queryResult, currentOffset: offset, count: resultCount};
+            }else{
+                return {result: queryResult, currentOffset: offset, count: resultCount};
+            }
 
-       }
+        }
 
+    }
+
+    /**
+     *
+     * @param Model Storable
+     * @param filter [{{field: String, operation: String, value: *}}]
+     * @param limit Number
+     * @param offset
+     * @param countField String
+     * @returns Collection
+     */
+    async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
+        let q = this.connection.table(Model.table).limit(limit).offset(offset).queryContext(Model);
+
+        filter.forEach( w => {
+            q = q.andWhere(w.field, w.operator, w.value);
+        });
+
+        return q;
+    }
+
+    /**
+     *
+     * @param Model Storable
+     * @param filter [{{field: String, operation: String, value: *}}]
+     * @param limit Number
+     * @param offset
+     * @param countField String
+     * @returns Collection
+     */
+    async simpleCount(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
+        let q = this.connection.count(`id`).table(Model.table).limit(limit).offset(offset);
+
+        filter.forEach( w => {
+            q = q.andWhere(w.field, w.operator, w.value);
+        });
+
+        return q;
     }
 
     /**
@@ -213,7 +313,7 @@ module.exports = class Sqlbased extends Connector {
     async save(object){
 
         if(!(object instanceof Storable)){
-            throw new InvalidArgumentError(object, Storable);
+            //throw new InvalidArgumentError(object, Storable);
         }
 
         if(!object.changed){
@@ -229,18 +329,19 @@ module.exports = class Sqlbased extends Connector {
             object.createdon = new Date();
         }
 
-        // add all fields via their getters
-        fields.forEach((field)=> {
-            newValues[field.name] = object[field.field];
-        })
-
+        for(let field in fields){
+            const cc = fields[field];
+            if(cc && cc.type){
+                newValues[cc.name] = await cc.type.validator(object[cc.field]);
+            }
+        }
 
         if(object.id !== null){
 
             // update records
             await this.connection.table(object.constructor.table)
                 .where({ id: object.id })
-                .update(newValues).queryContext(object.constructor);
+                .update(newValues);
 
             return true;
 
@@ -253,7 +354,7 @@ module.exports = class Sqlbased extends Connector {
 
             // create record
             await this.connection.table(object.constructor.table)
-                .insert(newValues).queryContext(object.constructor);
+                .insert(newValues);
 
             return true;
 

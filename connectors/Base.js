@@ -9,12 +9,14 @@ module.exports =  class Connector {
 
     types = {}
     validators = {}
+    expanders = {}
 
     get COMPARE(){
         return {
             NOT: '!=',
             EQUALS: '=',
             LIKE: 'like',
+            NOT_LIKE: 'not like',
             IN: 'in',
             NOT_IN: 'in',
             GREATER_THAN: '>',
@@ -36,7 +38,7 @@ module.exports =  class Connector {
      * Loads a single Storable instance based on its ID
      * @returns {Promise<Storable>}
      */
-    async getById(Store, id){
+    async getByID(Store, id, deleted = false){
         return new Store();
     }
 

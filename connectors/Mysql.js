@@ -1,8 +1,8 @@
 const Knex = require('knex');
-const Collection = require("../utilities/Collection");
-const Sqlite = require("./Sqlbased");
+const Collection = require("../utilities/collection");
+const Sqlbased = require("./Sqlbased");
 
-module.exports = class Mysql extends Sqlite {
+module.exports = class Mysql extends Sqlbased {
 
     constructor(opts) {
         super();
@@ -17,27 +17,32 @@ module.exports = class Mysql extends Sqlite {
                 port : opts.port || 3306,
                 user : opts.user,
                 password : opts.password,
-                database : opts.db
+                database : opts.db,
+                ssl: opts.ssl || false,
             },
             useNullAsDefault: true,
-            postProcessResponse: (result, queryContext) => {
+            postProcessResponse: async (result, queryContext) => {
 
-                if(!queryContext){
+                if (!queryContext) {
                     return result;
                 }
 
                 if (Array.isArray(result)) {
                     let list = new Collection(queryContext);
-                    result.forEach( res => {
-                        const obj = queryContext.fromResultSet(res)
+                    for (const res of result) {
+                        const obj = await queryContext.fromResultSet(res, this)
                         list.set(obj.id, obj);
-                    });
+                    }
                     return list;
                 } else {
-                    return queryContext.fromResultSet(result);
+                    return await queryContext.fromResultSet(result, this);
                 }
             }
         });
+
+        this.connection.raw('SELECT 1+1').then( data => {
+            this.connected = true;
+        })
 
     }
 
