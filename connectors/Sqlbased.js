@@ -1,12 +1,7 @@
-const Knex = require('knex');
-const Path = require('path');
-const Connector = require('./base');
-const Storable = require("../utilities/storable");
-const {InvalidArgumentError} = require("../utilities/errors");
-const {nanoid} = require("nanoid");
-const Collection = require("../utilities/collection");
+import Connector from "./base.js";
+import Collection from "../utilities/collection.js";
 
-module.exports = class Sqlbased extends Connector {
+export default class SqlBased extends Connector {
 
     connection;
 
@@ -14,38 +9,56 @@ module.exports = class Sqlbased extends Connector {
     types = {
         id: {
             db_type: 'VARCHAR(255)',
-            validator: Sqlbased.validators.string,
-            expander: Sqlbased.expanders.string
+            validator: SqlBased.validators.string,
+            expander: SqlBased.expanders.string
         },
         string: {
             db_type: 'VARCHAR(255)',
-            validator: Sqlbased.validators.string,
-            expander: Sqlbased.expanders.string
+            validator: SqlBased.validators.string,
+            expander: SqlBased.expanders.string
         },
         text: {
             db_type: 'TEXT',
-            validator: Sqlbased.validators.string,
-            expander: Sqlbased.expanders.string
+            validator: SqlBased.validators.string,
+            expander: SqlBased.expanders.string
         },
         json: {
             db_type: 'TEXT',
-            validator: Sqlbased.validators.json,
-            expander: Sqlbased.expanders.json
+            validator: SqlBased.validators.json,
+            expander: SqlBased.expanders.json
         },
         int: {
             db_type: 'INTEGER',
-            validator: Sqlbased.validators.int,
-            expander: Sqlbased.expanders.int
+            validator: SqlBased.validators.int,
+            expander: SqlBased.expanders.int
         },
         boolean: {
             db_type: 'BOOLEAN',
-            validator: Sqlbased.validators.boolean,
-            expander: Sqlbased.expanders.boolean
+            validator: SqlBased.validators.boolean,
+            expander: SqlBased.expanders.boolean
         },
         date: {
             db_type: 'DATETIME',
-            validator: Sqlbased.validators.datetime,
-            expander: Sqlbased.expanders.datetime
+            validator: SqlBased.validators.datetime,
+            expander: SqlBased.expanders.datetime
+        }
+    }
+
+    async sqlCollectionBuilder(result, queryContext){
+
+        if (!queryContext) {
+            return result;
+        }
+
+        if (Array.isArray(result)) {
+            let list = new Collection(queryContext);
+            for (const res of result) {
+                const obj = await queryContext.fromResultSet(res, this);
+                list.set(obj.id, obj);
+            }
+            return list;
+        } else {
+            return await queryContext.fromResultSet(result, this);
         }
     }
 

@@ -1,19 +1,17 @@
-module.exports = {
+import Storable from "./utilities/storable.js";
+import Sqlite from "./connectors/sqlite.js";
+import Collection from "./utilities/collection.js";
+import Mysql from "./connectors/Mysql.js";
 
-    connection: false,
-    setConnection: function(c){
-        if(c instanceof require('./connectors/base')){
-            this.connection = c;
-        }else{
-            throw new Error('Connection can only be set to instance of baseConnector')
-        }
-    },
+export Storable from "./utilities/storable.js";
+export Collection from "./utilities/collection.js";
 
-    storable: require('./utilities/storable'),
-    collection: require('./utilities/collection'),
+export Sqlite from "./connectors/sqlite.js";
+export Mysql from "./connectors/mysql.js";
 
-    baseConnector: require('./connectors/base'),
-    sqlbased: require('./connectors/Sqlbased'),
-    sqlite: require('./connectors/Sqlite'),
-    mysql: require('./connectors/Mysql'),
+export default {
+    Storable,
+    Collection,
+    Sqlite,
+    Mysql
 }

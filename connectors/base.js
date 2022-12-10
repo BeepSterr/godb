@@ -1,8 +1,4 @@
-const {InvalidConnectorException, InvalidArgumentError} = require("../utilities/errors");
-const Storable = require("../utilities/storable");
-const Collection = require("../utilities/collection");
-
-module.exports =  class Connector {
+export default class Connector {
 
     /*
         This is the base Connector class, This class defines the API Connectors should implement.

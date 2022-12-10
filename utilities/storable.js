@@ -1,16 +1,21 @@
-const {IllegalModificationException} = require("./errors");
+import {IllegalModificationException} from "./errors.js";
 
-module.exports = class Storable {
+export default class Storable {
 
     static get table(){
         return 'model';
     }
 
     static generateID(){
-        const { customAlphabet } = require('nanoid');
-        const alphabet = '0123456789abcdefghjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const nanoid = customAlphabet(alphabet, 16);
-        return nanoid();
+
+        const now = Math.floor(new Date().getTime() / 100).toString(36);
+        const node = process.pid.toString(36);
+
+        const rnd1 = Math.floor(Math.random() * 10000000000).toString(36);
+        const rnd2 = Math.floor(Math.random() * 10000000000000).toString(36);
+        const rnd3 = Math.floor(Math.random() * 10000000000).toString(36);
+
+        return `${now}-${node}-${rnd1}-${rnd2}-${rnd3}`;
     }
 
     static get idType(){

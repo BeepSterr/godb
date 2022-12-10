@@ -1,13 +1,8 @@
-const Knex = require('knex');
-const Path = require('path');
-const Connector = require('./base');
-const Storable = require("../utilities/storable");
-const {InvalidArgumentError} = require("../utilities/errors");
-const {nanoid} = require("nanoid");
-const Collection = require("../utilities/collection");
-const Sqlbased = require("./Sqlbased");
+import Sqlbased from "./Sqlbased.js";
+import {default as Knex} from "knex";
+import * as Path from "path";
 
-module.exports = class Sqlite extends Sqlbased {
+export default class Sqlite extends Sqlbased {
 
     constructor() {
         super();
@@ -22,23 +17,7 @@ module.exports = class Sqlite extends Sqlbased {
                 flags: ['OPEN_URI', 'OPEN_SHAREDCACHE']
             },
             useNullAsDefault: true,
-            postProcessResponse: async (result, queryContext) => {
-
-                if (!queryContext) {
-                    return result;
-                }
-
-                if (Array.isArray(result)) {
-                    let list = new Collection(queryContext);
-                    for (const res of result) {
-                        const obj = await queryContext.fromResultSet(res, this);
-                        list.set(obj.id, obj);
-                    }
-                    return list;
-                } else {
-                    return await queryContext.fromResultSet(result, this);
-                }
-            }
+            postProcessResponse: this.sqlCollectionBuilder
         });
 
     }

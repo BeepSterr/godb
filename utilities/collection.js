@@ -1,6 +1,6 @@
-const {InvalidCollectionEntry, InvalidCollectionType} = require("./errors");
+import {InvalidCollectionEntry, InvalidCollectionType} from "./errors.js";
 
-module.exports = class Collection extends Map {
+export default class Collection extends Map {
 
     #type = null
 
