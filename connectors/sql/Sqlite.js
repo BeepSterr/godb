@@ -1,8 +1,8 @@
-import Sqlbased from "./Sqlbased.js";
+import SqlBased from "./Sqlbased.js";
 import {default as Knex} from "knex";
 import * as Path from "path";
 
-export default class Sqlite extends Sqlbased {
+export default class Sqlite extends SqlBased {
 
     constructor() {
         super();

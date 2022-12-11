@@ -1,114 +1,73 @@
-import Connector from "./base.js";
-import Collection from "../utilities/collection.js";
+import Connector from "../base.js";
+import Collection from "../../utilities/collection.js";
+import {Storable} from "../../index.js";
+import {InvalidArgument, InvalidDataTypeError} from "../../utilities/errors.js";
+
+import DbString from "../../types/string.js";
+import DbText from "../../types/text.js";
+import DbJson from "../../types/json.js";
+import DbInteger from "../../types/integer.js";
+import DbFloat from "../../types/float.js";
+import DbBoolean from "../../types/boolean.js";
+import DbDateTime from "../../types/datetime.js";
+import DbRelation from "../../types/relation.js";
 
 export default class SqlBased extends Connector {
 
     connection;
 
     // Types used by the database
-    types = {
-        id: {
-            db_type: 'VARCHAR(255)',
-            validator: SqlBased.validators.string,
-            expander: SqlBased.expanders.string
-        },
-        string: {
-            db_type: 'VARCHAR(255)',
-            validator: SqlBased.validators.string,
-            expander: SqlBased.expanders.string
-        },
-        text: {
-            db_type: 'TEXT',
-            validator: SqlBased.validators.string,
-            expander: SqlBased.expanders.string
-        },
-        json: {
-            db_type: 'TEXT',
-            validator: SqlBased.validators.json,
-            expander: SqlBased.expanders.json
-        },
-        int: {
-            db_type: 'INTEGER',
-            validator: SqlBased.validators.int,
-            expander: SqlBased.expanders.int
-        },
-        boolean: {
-            db_type: 'BOOLEAN',
-            validator: SqlBased.validators.boolean,
-            expander: SqlBased.expanders.boolean
-        },
-        date: {
-            db_type: 'DATETIME',
-            validator: SqlBased.validators.datetime,
-            expander: SqlBased.expanders.datetime
-        }
-    }
+
+    types = new Map();
 
     async sqlCollectionBuilder(result, queryContext){
-
         if (!queryContext) {
             return result;
         }
 
         if (Array.isArray(result)) {
-            let list = new Collection(queryContext);
+            let list = new Collection(queryContext.model);
             for (const res of result) {
-                const obj = await queryContext.fromResultSet(res, this);
+                const obj = await queryContext.model.fromResultSet(res, queryContext.db);
                 list.set(obj.id, obj);
             }
             return list;
         } else {
-            return await queryContext.fromResultSet(result, this);
+            return await queryContext.model.fromResultSet(result, queryContext.db);
         }
-    }
-
-    // TODO: Add proper data validators, these are placeholders
-    static validators = {
-        string: async function(input){
-            return String(input);
-        },
-        json: async function(input){
-            return JSON.stringify(input);
-        },
-        int: async function(input){
-            return Number(input).toFixed(0);
-        },
-        boolean: async function(input){
-            return !!input;
-        },
-        datetime: async function(input){
-            if(input instanceof Date){
-                return input;
-            }else{
-                return new Date(input);
-            }
-        },
-    }
-
-    static expanders = {
-        string: async function(input){
-            return String(input);
-        },
-        json: async function(input){
-            return JSON.parse(input);
-        },
-        int: async function(input){
-            return Number(input).toFixed(0);
-        },
-        boolean: async function(input){
-            return !!input;
-        },
-        datetime: async function(input){
-            return new Date(input);
-        },
     }
 
     constructor(){
         super();
+
+        this.types.set(DbRelation, 'VARCHAR(255)');
+        this.types.set(DbString, 'VARCHAR(255)');
+        this.types.set(DbText, 'TEXT');
+        this.types.set(DbJson, 'JSON');
+        this.types.set(DbInteger, 'INTEGER');
+        this.types.set(DbFloat, 'FLOAT');
+        this.types.set(DbBoolean, 'BOOLEAN');
+        this.types.set(DbDateTime, 'DATETIME');
+
     }
 
     createDatabase(){
         //this.connection = new Knex();
+    }
+
+    /**
+     * @returns {Promise<void>}
+     * @param models
+     */
+    async initializeModels(models){
+        await super.initializeModels(models);
+        if(models[Symbol.iterator]){
+            for (const model of models) {
+                await this.initStore(model);
+            }
+        }else{
+            await this.initStore(models);
+        }
     }
 
     /**
@@ -117,14 +76,18 @@ export default class SqlBased extends Connector {
      */
     async initStore(Model){
 
-        let me = this;
-        this.connection.schema.hasTable(Model.table).then(async function(success){
-            if(!success){
-                await me.#createTableSchema(Model);
-            }else{
-                await me.#updateTableSchema(Model);
-            }
+        return new Promise( async (resolve, reject) => {
+            let me = this;
+            this.connection.schema.hasTable(Model.table).then(async function(success){
+                if(!success){
+                    await me.#createTableSchema(Model);
+                }else{
+                    await me.#updateTableSchema(Model);
+                }
+                resolve(true);
+            });
         });
+
 
     }
     /**
@@ -166,7 +129,6 @@ export default class SqlBased extends Connector {
 
     }
     async buildTable(Model, tableBuilder, cc, isUpdate){
-
         const columns = Model.defineColumns(this);
 
         for(let b = 0; b < columns.length;b++){
@@ -174,7 +136,7 @@ export default class SqlBased extends Connector {
             const column = columns[b];
 
             // create base column type with limit if possible.
-            let col = tableBuilder.specificType(column.name, column.type.db_type);
+            let col = tableBuilder.specificType(column.name, this.types.get(column.type));
 
             column.nullable ? col.nullable() : col.notNullable();
 
@@ -186,14 +148,13 @@ export default class SqlBased extends Connector {
                 col.index(`idx${column.index}`);
             }
 
+            const t = new Model();
+            if(t[column.name] !== undefined){
+                col.default(new Model()[column.name]);
+            }
+
             if(column.references  && column.references.prototype instanceof Storable){
-
-                let ref_field = column.reference_field;
-                if(!column.reference_field){
-                    ref_field = 'id';
-                }
-
-                col.references(`${column.references.table}.${ref_field}`);
+                col.references(`${column.references.table}.id`);
             }
 
             // if exists alter
@@ -206,26 +167,26 @@ export default class SqlBased extends Connector {
         return tableBuilder;
     }
 
-    async getByID(Model, Id, deleted = false){
+    async get(Model, Id, deleted = false){
         const col = await this.connection.table(Model.table).where({
             id: Id,
             deleted: deleted ? 1 : 0
-        }).queryContext(Model);
+        }).queryContext({ model: Model, db: this});
         return col.first;
     }
 
-    async getByField(Model, field, value, deleted = false){
+    async getBy(Model, field, value, deleted = false){
 
         let where = {
             deleted: deleted ? 1 : 0
         };
         where[field] = value;
-        return this.connection.table(Model.table).where(where).queryContext(Model);
+        return this.connection.table(Model.table).where(where).queryContext({ model: Model, db: this});
     }
 
-    async loadBy(Model, Where, deleted = false){
+    async find(Model, Where, deleted = false){
 
-        let q = this.connection.table(Model.table).queryContext(Model);
+        let q = this.connection.table(Model.table).queryContext({ model: Model, db: this});
         if(!deleted){
             q = q.andWhere('deleted', 0);
         }
@@ -253,7 +214,7 @@ export default class SqlBased extends Connector {
         let queryResult;
         while(resultCount >= limit){
 
-            queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext(Model);
+            queryResult = await this.connection.table(Model.table).where(filter).andWhere('updatedon', '>', offset).limit(limit).queryContext({ model: Model, db: this});
             resultCount = queryResult.length;
             if(resultCount > 0){
                 offset = queryResult[resultCount-1].updatedon;
@@ -279,7 +240,7 @@ export default class SqlBased extends Connector {
      * @returns Collection
      */
     async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
-        let q = this.connection.table(Model.table).limit(limit).offset(offset).queryContext(Model);
+        let q = this.connection.table(Model.table).limit(limit).offset(offset).queryContext({ model: Model, db: this});
 
         filter.forEach( w => {
             q = q.andWhere(w.field, w.operator, w.value);
@@ -290,15 +251,16 @@ export default class SqlBased extends Connector {
 
     /**
      * @param object Storable
+     * @param force
      * @returns Promise
      */
-    async save(object){
+    async save(object, force = false){
 
         if(!(object instanceof Storable)){
-            throw new InvalidArgumentError(object, Storable);
+            throw new InvalidArgument(object, Storable);
         }
 
-        if(!object.changed){
+        if(!object.changed && !force){
             return false;
         }
 
@@ -313,7 +275,12 @@ export default class SqlBased extends Connector {
 
         for(let field in fields){
             const cc = fields[field];
-            newValues[cc.name] = await cc.type.validator(object[cc.field]);
+            if(!this.types.has(cc.type)){
+                throw new InvalidDataTypeError(cc.type.constructor.name);
+            }
+
+            let type = new cc.type(this);
+            newValues[cc.name] = await type.shrink(object[cc.name]);
         }
 
         if(object.id !== null){
@@ -329,7 +296,7 @@ export default class SqlBased extends Connector {
         }else{
 
             // create ID
-            newValues['id'] = object.constructor.generateID();
+            newValues['id'] = await object.constructor.generateID();
             object.id = newValues['id'];
 
             // create record

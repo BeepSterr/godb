@@ -1,3 +1,5 @@
+import {InvalidConnector} from "../utilities/errors.js";
+
 export default class Connector {
 
     /*
@@ -11,7 +13,7 @@ export default class Connector {
     validators = {}
     expanders = {}
 
-    get COMPARE(){
+    get compare(){
         return {
             NOT: '!=',
             EQUALS: '=',
@@ -23,26 +25,73 @@ export default class Connector {
         }
     }
 
+    models = new Map();
+
 
     /**
      * Initialized a Storable object to be used in this connector
      * @returns boolean promise<boolean>
-     * @param input [Storable]
+     * @param models [Storable]
      */
-    async initializeModels(input){
+    async initializeModels(models){
+        if(models[Symbol.iterator]){
+            for (const model of models) {
+                this.models.set(model.table, model)
+            }
+        }else{
+            this.models.set(input.table, model)
+        }
         return false;
     }
 
     /**
-     * Loads a single Storable instance based on its ID
-     * @returns {Promise<Storable>}
+     * @param tablename {string}
+     * @returns {Promise<void>}
      */
-    async getByID(Store, id, deleted = false){
-        return new Store();
+    getModel(tablename){
+        return this.models.get(tablename);
+    }
+
+    /**
+     * Loads a single Storable instance based on its ID
+     * @returns {Promise<Store>}
+     */
+    async get(Store, id, deleted = false){
+        console.warn('Tried to get object from base connector, this is not supported');
+        return new Promise((resolve, reject) => { resolve(new Store()) });
+    }
+
+    /**
+     * Loads a single Storable instance based on a single field
+     * @returns {Promise<Collection>}
+     */
+    async getBy(Store, field, value, deleted = false){
+        console.warn('Tried to get object from base connector, this is not supported');
+        return this.get(Store, value, deleted);
+    }
+
+    /**
+     * Loads a single Storable instance based on a single field
+     * @returns {Promise<Collection>}
+     */
+    async find(Store, Where, deleted = false){
+        console.warn('Tried to get object from base connector, this is not supported');
+        return this.get(Store, Where, deleted);
+    }
+
+    /**
+     * Deletes a instance of Storable
+     * @param object {Storable}
+     * @returns {Promise<unknown>}
+     */
+    async delete(object){
+        object.setDeleted(true);
+        return this.save(object);
     }
 
     async save(object){
-        return false;
+        console.warn('Tried to save object to base connector, this is not supported');
+        return new Promise((resolve, reject) => { reject(new InvalidConnector('Tried to save object to base connector, this is not supported')) });
     }
 
 }

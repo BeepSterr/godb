@@ -1,4 +1,8 @@
-import {IllegalModificationException} from "./errors.js";
+import {IllegalModification} from "./errors.js";;
+import DbString from "../types/string.js";
+import DbDateTime from "../types/datetime.js";
+import DbBoolean from "../types/boolean.js";
+import Stub from "./stub.js";
 
 export default class Storable {
 
@@ -19,7 +23,7 @@ export default class Storable {
     }
 
     static get idType(){
-        return "string"
+        return DbString;
     }
 
     /**
@@ -29,10 +33,10 @@ export default class Storable {
      */
     static defineColumns(Connector){
         return [
-            { name: 'id', field: 'id',type: Connector.types[this.idType], primary: true },
-            { name: 'createdon', field: 'createdon',type: Connector.types.date },
-            { name: 'updatedon', field: 'updatedon',type: Connector.types.date },
-            { name: 'deleted', field: 'deleted',type: Connector.types.boolean, nullable: true},
+            { name: 'id', field: 'id',type: this.idType, primary: true },
+            { name: 'createdon', field: 'createdon',type: DbDateTime },
+            { name: 'updatedon', field: 'updatedon',type: DbDateTime },
+            { name: 'deleted', field: 'deleted',type: DbBoolean, nullable: false},
         ];
     }
 
@@ -53,7 +57,7 @@ export default class Storable {
     set id(v){
         this.changed = true;
         if(this.#id !== null){
-            throw new IllegalModificationException(this, 'id');
+            throw new IllegalModification(this, 'id');
         }
         this.#id = v;
     }
@@ -98,10 +102,15 @@ export default class Storable {
 
         for(let cid in columns){
             let column = columns[cid];
-            x[column.field] = await column.type.expander(resultSet[column.name]);
+            const expander = new column.type(Connector);
+            x[column.field] = await expander.expand(resultSet[column.name]);
         }
 
         return x;
+    }
+
+    toRelation(){
+        return `{${this.constructor.table}/${this.id}}`
     }
 
     toString(){

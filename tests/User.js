@@ -1,8 +1,10 @@
-const Storable = require("../utilities/storable");
-module.exports = class User extends Storable {
+import {Storable} from "../index.js";
+import DbString from "../types/string.js";
+
+export default class User extends Storable {
 
     static get table(){
-        return 'user';
+        return 'users';
     }
 
 
@@ -13,7 +15,7 @@ module.exports = class User extends Storable {
      */
     static defineColumns(Connector){
         return [
-            { name: 'username', field: 'username',type: Connector.types.string, primary: false },
+            { name: 'username', field: 'username', type: DbString, primary: false },
             ...super.defineColumns(Connector)
         ];
     }
