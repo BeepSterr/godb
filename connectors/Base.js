@@ -1,4 +1,4 @@
-import {InvalidConnector} from "../utilities/errors.js";
+import {InvalidConnector} from "../utilities/Errors.js";
 
 export default class Connector {
 

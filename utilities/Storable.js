@@ -1,8 +1,8 @@
-import {IllegalModification} from "./errors.js";;
-import DbString from "../types/string.js";
-import DbDateTime from "../types/datetime.js";
-import DbBoolean from "../types/boolean.js";
-import Stub from "./stub.js";
+import {IllegalModification} from "./Errors.js";;
+import DbString from "../types/String.js";
+import DbDateTime from "../types/DateTime.js";
+import DbBoolean from "../types/Boolean.js";
+import Stub from "./Stub.js";
 
 export default class Storable {
 

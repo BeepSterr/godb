@@ -1,4 +1,4 @@
-import Type from "../utilities/type.js";
+import Type from "../utilities/Type.js";
 
 export default class DbJson extends Type {
 

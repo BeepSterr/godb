@@ -1,4 +1,4 @@
-import {InvalidDataTypeError} from "./errors.js";
+import {InvalidDataTypeError} from "./Errors.js";
 
 export default class Type {
 

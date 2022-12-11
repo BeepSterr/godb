@@ -1,16 +1,16 @@
-import Connector from "../base.js";
-import Collection from "../../utilities/collection.js";
+import Connector from "../Base.js";
+import Collection from "../../utilities/Collection.js";
 import {Storable} from "../../index.js";
-import {InvalidArgument, InvalidDataTypeError} from "../../utilities/errors.js";
+import {InvalidArgument, InvalidDataTypeError} from "../../utilities/Errors.js";
 
-import DbString from "../../types/string.js";
-import DbText from "../../types/text.js";
-import DbJson from "../../types/json.js";
-import DbInteger from "../../types/integer.js";
-import DbFloat from "../../types/float.js";
-import DbBoolean from "../../types/boolean.js";
-import DbDateTime from "../../types/datetime.js";
-import DbRelation from "../../types/relation.js";
+import DbString from "../../types/String.js";
+import DbText from "../../types/Text.js";
+import DbJson from "../../types/Json.js";
+import DbInteger from "../../types/Integer.js";
+import DbFloat from "../../types/Float.js";
+import DbBoolean from "../../types/Boolean.js";
+import DbDateTime from "../../types/DateTime.js";
+import DbRelation from "../../types/Relation.js";
 
 export default class SqlBased extends Connector {
 
@@ -87,7 +87,6 @@ export default class SqlBased extends Connector {
                 resolve(true);
             });
         });
-
 
     }
     /**

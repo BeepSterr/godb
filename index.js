@@ -1,16 +1,16 @@
 import Sqlite from "./connectors/sql/Sqlite.js";
 import Mysql from "./connectors/sql/Mysql.js";
 export {default as Sqlite} from "./connectors/sql/Sqlite.js";
-export {default as Mysql} from "./connectors/sql/mysql.js";
+export {default as Mysql} from "./connectors/sql/Mysql.js";
 
-import Storable from "./utilities/storable.js";
-import Collection from "./utilities/collection.js";
-import Stub from "./utilities/stub.js";
-import Type from "./utilities/type.js";
-export {default as Storable} from "./utilities/storable.js";
-export {default as Collection} from "./utilities/collection.js";
-export {default as Stub} from "./utilities/stub.js";
-export {default as Type} from "./utilities/type.js";
+import Storable from "./utilities/Storable.js";
+import Collection from "./utilities/Collection.js";
+import Stub from "./utilities/Stub.js";
+import Type from "./utilities/Type.js";
+export {default as Storable} from "./utilities/Storable.js";
+export {default as Collection} from "./utilities/Collection.js";
+export {default as Stub} from "./utilities/Stub.js";
+export {default as Type} from "./utilities/Type.js";
 
 export default {
     Storable,
@@ -20,23 +20,23 @@ export default {
     Mysql
 }
 
-import DbRelation from "./types/relation.js";
-import DbBoolean from "./types/boolean.js";
-import DbString from "./types/string.js";
-import DbDateTime from "./types/datetime.js";
-import DbFloat from "./types/float.js";
-import DbInteger from "./types/integer.js";
-import DbJson from "./types/json.js";
-import DbText from "./types/text.js";
+import DbRelation from "./types/Relation.js";
+import DbBoolean from "./types/Boolean.js";
+import DbString from "./types/String.js";
+import DbDateTime from "./types/DateTime.js";
+import DbFloat from "./types/Float.js";
+import DbInteger from "./types/Integer.js";
+import DbJson from "./types/Json.js";
+import DbText from "./types/Text.js";
 
-export {default as DbRelation} from "./types/relation.js";
-export {default as DbBoolean} from "./types/boolean.js";
-export {default as DbString} from "./types/string.js";
-export {default as DbDateTime} from "./types/datetime.js";
-export {default as DbFloat} from "./types/float.js";
-export {default as DbInteger} from "./types/integer.js";
-export {default as DbJson} from "./types/json.js";
-export {default as DbText} from "./types/text.js";
+export {default as DbRelation} from "./types/Relation.js";
+export {default as DbBoolean} from "./types/Boolean.js";
+export {default as DbString} from "./types/String.js";
+export {default as DbDateTime} from "./types/DateTime.js";
+export {default as DbFloat} from "./types/Float.js";
+export {default as DbInteger} from "./types/Integer.js";
+export {default as DbJson} from "./types/Json.js";
+export {default as DbText} from "./types/Text.js";
 
 export const types = {
     DbString,

@@ -1,6 +1,6 @@
-import Type from "../utilities/type.js";
+import Type from "../utilities/Type.js";
 
-export default class DbFloat extends Type {
+export default class DbInteger extends Type {
 
     /**
      * @param value {number}
@@ -8,9 +8,9 @@ export default class DbFloat extends Type {
      */
     shrink(value){
         if(value instanceof Number){
-            return value;
+            return Math.trunc(value);
         }else{
-            return Number(value);
+            return Math.trunc(Number(value));
         }
     }
 
@@ -19,6 +19,6 @@ export default class DbFloat extends Type {
      * @returns {number}
      */
     expand(value) {
-        return Number(value);
+        return Math.trunc(Number(value));
     }
 }

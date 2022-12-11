@@ -1,4 +1,4 @@
-import DbString from "../types/string.js";
+import DbString from "./String.js";
 
 /**
  * Added to support SQL "text" type

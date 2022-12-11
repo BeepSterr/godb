@@ -1,7 +1,7 @@
-import Type from "../utilities/type.js";
+import Type from "../utilities/Type.js";
 import {Storable} from "../index.js";
-import {InvalidDataTypeError} from "../utilities/errors.js";
-import Stub from "../utilities/stub.js";
+import {InvalidDataTypeError} from "../utilities/Errors.js";
+import Stub from "../utilities/Stub.js";
 
 /**
  * Added to support SQL "text" type

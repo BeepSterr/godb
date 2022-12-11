@@ -1,5 +1,5 @@
 import {Storable} from "../index.js";
-import DbString from "../types/string.js";
+import DbString from "../types/String.js";
 
 export default class User extends Storable {
 

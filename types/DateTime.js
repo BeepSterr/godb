@@ -1,4 +1,4 @@
-import Type from "../utilities/type.js";
+import Type from "../utilities/Type.js";
 import { DateTime } from "luxon";
 
 export default class DbDateTime extends Type {

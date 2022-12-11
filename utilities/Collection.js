@@ -1,4 +1,4 @@
-import {InvalidCollectionEntry, InvalidCollectionType} from "./errors.js";
+import {InvalidCollectionEntry, InvalidCollectionType} from "./Errors.js";
 
 export default class Collection extends Map {
 

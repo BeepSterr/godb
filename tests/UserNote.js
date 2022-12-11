@@ -1,6 +1,6 @@
 import {Storable} from "../index.js";
-import DbString from "../types/string.js";
-import DbRelation from "../types/relation.js";
+import DbString from "../types/String.js";
+import DbRelation from "../types/Relation.js";
 import User from "./User.js";
 
 export default class UserNote extends Storable {
@@ -12,7 +12,7 @@ export default class UserNote extends Storable {
 
     /**
      *
-     * @param Connector ../base.js
+     * @param Connector ../Base.js
      * @returns {[{field: string, name: string, type: *, nullable: ?boolean, references: ?Storable, reference_field: ?String, primary: ?Boolean}]}
      */
     static defineColumns(Connector){
