@@ -288,7 +288,7 @@ export default class SqlBased extends Connector {
             newValues[cc.name] = await type.shrink(object[cc.name]);
         }
 
-        if(object.new){
+        if(!object.new){
 
             // update records
             await this.connection.table(object.constructor.table)
@@ -301,8 +301,10 @@ export default class SqlBased extends Connector {
         }else{
 
             // create ID
-            newValues['id'] = await object.constructor.generateID();
-            object.id = newValues['id'];
+            if(object.id === null){
+                newValues['id'] = await object.constructor.generateID();
+                object.id = newValues['id'];
+            }
 
             // create record
             await this.connection.table(object.constructor.table)
