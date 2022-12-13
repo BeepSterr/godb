@@ -40,6 +40,8 @@ export default class Storable {
         ];
     }
 
+    new = true;
+
     #changed = false;
     set changed(v){
         this.#changed = !!v;
@@ -98,6 +100,8 @@ export default class Storable {
     static async fromResultSet(resultSet, Connector){
 
         let x = new this;
+        x.new = false;
+
         const columns = this.defineColumns(Connector);
 
         for(let cid in columns){

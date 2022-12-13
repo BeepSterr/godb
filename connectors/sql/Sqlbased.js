@@ -128,6 +128,7 @@ export default class SqlBased extends Connector {
 
     }
     async buildTable(Model, tableBuilder, cc, isUpdate){
+        const instance = new Model();
         const columns = Model.defineColumns(this);
 
         for(let b = 0; b < columns.length;b++){
@@ -143,13 +144,18 @@ export default class SqlBased extends Connector {
                 col.primary()
             }
 
+            // TODO: find a way to only add the index if it does not exist.
             if(column.index){
                 col.index(`idx${column.index}`);
             }
 
-            const t = new Model();
-            if(t[column.name] !== undefined){
+            if(instance[column.name] !== undefined){
                 col.default(new Model()[column.name]);
+            }
+
+            // TODO: find a way to only add the index if it does not exist.
+            if(column.unique){
+                col.unique();
             }
 
             if(column.references  && column.references.prototype instanceof Storable){
@@ -282,7 +288,7 @@ export default class SqlBased extends Connector {
             newValues[cc.name] = await type.shrink(object[cc.name]);
         }
 
-        if(object.id !== null){
+        if(object.new){
 
             // update records
             await this.connection.table(object.constructor.table)
