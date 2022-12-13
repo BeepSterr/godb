@@ -34,7 +34,7 @@ export default class DbRelation extends Type {
      * @returns {Stub}
      */
     expand(value) {
-        return Stub.create(this.db, value);
+        return value ? Stub.create(this.db, value) : null;
     }
 
 }
