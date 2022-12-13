@@ -21,6 +21,11 @@ export default class DbRelation extends Type {
         if(value instanceof Storable || value instanceof Stub){
             return value.toRelation();
         }
+
+        if(value === null || value === undefined){
+            return null;
+        }
+
         throw new InvalidDataTypeError(value);
     }
 
