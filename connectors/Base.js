@@ -39,7 +39,7 @@ export default class Connector {
                 this.models.set(model.table, model)
             }
         }else{
-            this.models.set(input.table, model)
+            this.models.set(models.table, models)
         }
         return false;
     }
