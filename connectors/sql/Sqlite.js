@@ -4,16 +4,21 @@ import * as Path from "path";
 
 export default class Sqlite extends SqlBased {
 
-    constructor() {
+    constructor(options) {
         super();
-        this.createDatabase();
+        this.createDatabase(options);
     }
 
-    createDatabase(){
+    createDatabase(options){
+
+        if(!options.path){
+            options.path = Path.join(process.cwd(), 'database.db');
+        }
+
         this.connection = new Knex({
             client: 'sqlite3',
             connection: {
-                filename: Path.join(process.cwd(), 'database.db'),
+                filename: options.path,
                 flags: ['OPEN_URI', 'OPEN_SHAREDCACHE']
             },
             useNullAsDefault: true,
