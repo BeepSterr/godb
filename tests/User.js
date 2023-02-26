@@ -30,4 +30,14 @@ export default class User extends Storable {
         this.#username = v;
     }
 
+    #email;
+    get email(){
+        return this.#email;
+    }
+
+    set email(v){
+        this.changed = true;
+        this.#email = v;
+    }
+
 }

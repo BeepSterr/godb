@@ -171,12 +171,22 @@ export default class SqlBased extends Connector {
 
         return tableBuilder;
     }
+    deletedColumn(Model){
+        return Model.defineColumns(this).find(c => c.field === 'deleted');
+    }
 
     async get(Model, Id, deleted = false){
-        const col = await this.connection.table(Model.table).where({
+
+        let deletedColumn = this.deletedColumn(Model);
+        const filter = {
             id: Id,
-            deleted: deleted ? 1 : 0
-        }).queryContext({ model: Model, db: this});
+        }
+
+        if(!deleted && deletedColumn){
+            filter[deletedColumn.name] = 0
+        }
+
+        const col = await this.connection.table(Model.table).where(filter).queryContext({ model: Model, db: this});
         return col.first;
     }
 
@@ -245,13 +255,29 @@ export default class SqlBased extends Connector {
      * @returns Collection
      */
     async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
-        let q = this.connection.table(Model.table).limit(limit).offset(offset).queryContext({ model: Model, db: this});
+
+        const countSplit = countField.split('|');
+        let q = this.connection.table(Model.table).limit(limit).offset(offset).orderBy(countSplit[0], countSplit[1]).queryContext({ model: Model, db: this});
 
         filter.forEach( w => {
             q = q.andWhere(w.field, w.operator, w.value);
         })
 
         return q;
+    }
+
+    /**
+     *
+     * @param Model Storable
+     * @param filter [{{field: String, operation: String, value: *}}]
+     * @returns Collection
+     */
+    async count(Model, filter = []){
+        let q = this.connection.table(Model.table);
+        filter.forEach( w => {
+            q = q.andWhere(w.field, w.operator, w.value);
+        })
+        return q.count();
     }
 
     /**
