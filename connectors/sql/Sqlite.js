@@ -11,6 +11,10 @@ export default class Sqlite extends SqlBased {
 
     createDatabase(options){
 
+        if(!options){
+            options = {};
+        }
+
         if(!options.path){
             options.path = Path.join(process.cwd(), 'database.db');
         }
