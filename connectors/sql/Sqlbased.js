@@ -254,16 +254,21 @@ export default class SqlBased extends Connector {
      * @param limit Number
      * @param offset
      * @param countField String
+     * @param deleted
      * @returns Collection
      */
-    async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id'){
+    async simpleSearch(Model, filter = [], limit = 100, offset = 0, countField = 'id', deleted = false){
 
         const countSplit = countField.split('|');
         let q = this.connection.table(Model.table).limit(limit).offset(offset).orderBy(countSplit[0], countSplit[1]).queryContext({ model: Model, db: this});
 
         filter.forEach( w => {
             q = q.andWhere(w.field, w.operator, w.value);
-        })
+        });
+
+        if(!deleted){
+            q = q.andWhere('deleted', '=', 0);
+        }
 
         return q;
     }
@@ -272,13 +277,17 @@ export default class SqlBased extends Connector {
      *
      * @param Model Storable
      * @param filter [{{field: String, operation: String, value: *}}]
+     * @param deleted
      * @returns Collection
      */
-    async count(Model, filter = []){
+    async count(Model, filter = [], deleted = false){
         let q = this.connection.table(Model.table);
         filter.forEach( w => {
             q = q.andWhere(w.field, w.operator, w.value);
         })
+        if(!deleted){
+            q = q.andWhere('deleted', '=', 0);
+        }
         return q.count();
     }
 
