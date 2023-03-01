@@ -149,12 +149,8 @@ export default class SqlBased extends Connector {
                 col.index(`idx${column.index}`);
             }
 
-            if(instance[column.name] !== undefined && column.default === 'auto'){
+            if(instance[column.name] !== undefined && column.default !== false){
                 col.default(new Model()[column.name]);
-            }
-
-            if(instance[column.name] !== undefined && column.default !== undefined){
-                col.default(column.default);
             }
 
             // TODO: find a way to only add the index if it does not exist.
