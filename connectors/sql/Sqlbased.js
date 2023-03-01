@@ -11,6 +11,7 @@ import DbFloat from "../../types/Float.js";
 import DbBoolean from "../../types/Boolean.js";
 import DbDateTime from "../../types/DateTime.js";
 import DbRelation from "../../types/Relation.js";
+import {DateTime} from "luxon";
 
 export default class SqlBased extends Connector {
 
@@ -300,9 +301,9 @@ export default class SqlBased extends Connector {
         const fields = object.constructor.defineColumns(this);
 
         // update internally managed fields
-        object.updatedon = new Date();
-        if(object.createdon === null){
-            object.createdon = new Date();
+        object.updatedon = DateTime.now();
+        if(!object.createdon){
+            object.createdon = DateTime.now();
         }
 
         for(let field in fields){
