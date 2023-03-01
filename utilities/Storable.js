@@ -85,7 +85,7 @@ export default class Storable {
     }
 
 
-    #deleted = false;
+    #deleted = 0;
     get deleted(){
         return this.#deleted;
     }

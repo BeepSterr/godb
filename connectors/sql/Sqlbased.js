@@ -145,22 +145,23 @@ export default class SqlBased extends Connector {
             }
 
             // TODO: find a way to only add the index if it does not exist.
-            if(column.index){
-                col.index(`idx${column.index}`);
-            }
+            // if(column.index){
+            //     col.index(`idx${column.index}`);
+            // }
 
             if(instance[column.name] !== undefined && column.default !== false){
                 col.default(new Model()[column.name]);
             }
 
             // TODO: find a way to only add the index if it does not exist.
-            if(column.unique){
-                col.unique();
-            }
+            // if(column.unique){
+            //     col.unique();
+            // }
 
-            if(column.references  && column.references.prototype instanceof Storable){
-                col.references(`${column.references.table}.id`);
-            }
+            // TODO: find a way to only add the index if it does not exist.
+            // if(column.references  && column.references.prototype instanceof Storable){
+            //     col.references(`${column.references.table}.id`);
+            // }
 
             // if exists alter
             if(cc.includes(column.name)){
