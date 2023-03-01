@@ -16,6 +16,9 @@ export default class DbJson extends Type {
      * @returns {Object}
      */
     expand(value) {
+        if(typeof value === 'object'){
+            return value;
+        }
         return JSON.parse(value);
     }
 }
