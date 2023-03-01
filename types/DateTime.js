@@ -17,7 +17,7 @@ export default class DbDateTime extends Type {
             return DateTime.fromJSDate(value).toISO();
         }
 
-        if(value instanceof String && DateTime.fromISO(value).isValid){
+        if(value instanceof String && (DateTime.fromISO(value).isValid || DateTime.fromSQL(value).isValid)){
             return value;
         }
 
@@ -30,6 +30,12 @@ export default class DbDateTime extends Type {
      * @returns {DateTime}
      */
     expand(value) {
-        return DateTime.fromISO(value);
+        if(value instanceof String && DateTime.fromISO(value).isValid){
+            return DateTime.fromISO(value);
+        }
+
+        if(value instanceof String && DateTime.fromSQL(value).isValid){
+            return DateTime.fromSQL(value);
+        }
     }
 }
