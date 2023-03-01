@@ -85,7 +85,7 @@ export default class Connector {
      * @returns {Promise<unknown>}
      */
     async delete(object){
-        object.setDeleted(true);
+        object.deleted = true;
         return this.save(object);
     }
 
