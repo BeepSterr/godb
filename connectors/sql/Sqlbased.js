@@ -347,6 +347,8 @@ export default class SqlBased extends Connector {
             await this.connection.table(object.constructor.table)
                 .insert(newValues);
 
+            object.new = false;
+
             return true;
 
         }
