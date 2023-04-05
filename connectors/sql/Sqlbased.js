@@ -331,10 +331,6 @@ export default class SqlBased extends Connector {
             await this.connection.table(object.constructor.table)
                 .where({ id: object.id })
                 .update(newValues);
-
-            return true;
-
-
         }else{
 
             // create ID
@@ -348,10 +344,13 @@ export default class SqlBased extends Connector {
                 .insert(newValues);
 
             object.new = false;
-
-            return true;
-
         }
+
+        if(object.afterSave && typeof object.afterSave === 'function'){
+            await object.afterSave();
+        }
+
+        return true;
 
     }
 
