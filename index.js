@@ -1,7 +1,9 @@
 import Sqlite from "./connectors/sql/Sqlite.js";
 import Mysql from "./connectors/sql/Mysql.js";
+import Http from "./connectors/web/Http.js";
 export {default as Sqlite} from "./connectors/sql/Sqlite.js";
 export {default as Mysql} from "./connectors/sql/Mysql.js";
+export {default as Http} from "./connectors/web/Http.js";
 
 import Storable from "./utilities/Storable.js";
 import Collection from "./utilities/Collection.js";
@@ -17,7 +19,8 @@ export default {
     Collection,
     Stub,
     Sqlite,
-    Mysql
+    Mysql,
+    Http
 }
 
 import DbRelation from "./types/Relation.js";
