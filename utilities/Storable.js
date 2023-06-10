@@ -1,19 +1,29 @@
-const {IllegalModificationException} = require("./Errors");
-module.exports = class Storable {
+import {IllegalModification} from "./Errors.js";;
+import DbString from "../types/String.js";
+import DbDateTime from "../types/DateTime.js";
+import DbBoolean from "../types/Boolean.js";
+import Stub from "./Stub.js";
+
+export default class Storable {
 
     static get table(){
         return 'model';
     }
 
     static generateID(){
-        const { customAlphabet } = require('nanoid');
-        const alphabet = '0123456789abcdefghjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const nanoid = customAlphabet(alphabet, 16);
-        return nanoid();
+
+        const now = Math.floor(new Date().getTime() / 100).toString(36);
+        const node = process.pid.toString(36);
+
+        const rnd1 = Math.floor(Math.random() * 10000000000).toString(36);
+        const rnd2 = Math.floor(Math.random() * 10000000000000).toString(36);
+        const rnd3 = Math.floor(Math.random() * 10000000000).toString(36);
+
+        return `${now}-${node}-${rnd1}-${rnd2}-${rnd3}`;
     }
 
     static get idType(){
-        return "string"
+        return DbString;
     }
 
     /**
@@ -23,12 +33,14 @@ module.exports = class Storable {
      */
     static defineColumns(Connector){
         return [
-            { name: 'id', field: 'id',type: Connector.types[this.idType], primary: true },
-            { name: 'createdon', field: 'createdon',type: Connector.types.date },
-            { name: 'updatedon', field: 'updatedon',type: Connector.types.date },
-            { name: 'deleted', field: 'deleted',type: Connector.types.boolean, nullable: true},
+            { name: 'id', field: 'id',type: this.idType, primary: true },
+            { name: 'createdon', field: 'createdon',type: DbDateTime },
+            { name: 'updatedon', field: 'updatedon',type: DbDateTime },
+            { name: 'deleted', field: 'deleted',type: DbBoolean, nullable: false},
         ];
     }
+
+    new = true;
 
     #changed = false;
     set changed(v){
@@ -47,7 +59,7 @@ module.exports = class Storable {
     set id(v){
         this.changed = true;
         if(this.#id !== null){
-            throw new IllegalModificationException(this, 'id');
+            throw new IllegalModification(this, 'id');
         }
         this.#id = v;
     }
@@ -73,7 +85,7 @@ module.exports = class Storable {
     }
 
 
-    #deleted = false;
+    #deleted = 0;
     get deleted(){
         return this.#deleted;
     }
@@ -88,16 +100,21 @@ module.exports = class Storable {
     static async fromResultSet(resultSet, Connector){
 
         let x = new this;
+        x.new = false;
+
         const columns = this.defineColumns(Connector);
 
         for(let cid in columns){
             let column = columns[cid];
-            if(column && column.type){
-                x[column.field] = await column.type.expander(resultSet[column.name]);
-            }
+            const expander = new column.type(Connector);
+            x[column.field] = await expander.expand(resultSet[column.name]);
         }
 
         return x;
+    }
+
+    toRelation(){
+        return `{${this.constructor.table}/${this.id}}`
     }
 
     toString(){
