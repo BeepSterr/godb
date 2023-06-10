@@ -1,7 +1,7 @@
 import Connector from "../Base.js";
 import Collection from "../../utilities/Collection.js";
 import {Storable} from "../../index.js";
-import {InvalidArgument, InvalidDataTypeError} from "../../utilities/Errors.js";
+import {InvalidArgument} from "../../utilities/Errors.js";
 import {DateTime} from "luxon";
 
 export default class Http extends Connector {
@@ -49,6 +49,11 @@ export default class Http extends Connector {
         });
 
         if(!response.ok){
+
+            if(response.status === 404){
+                return undefined;
+            }
+
             throw new Error('HTTP Error: ' + response.status);
         }
 

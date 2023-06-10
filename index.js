@@ -1,14 +1,15 @@
 import Sqlite from "./connectors/sql/Sqlite.js";
 import Mysql from "./connectors/sql/Mysql.js";
 import Http from "./connectors/web/Http.js";
+ import BubblingConnector from "./connectors/BubblingConnector.js";
 export {default as Sqlite} from "./connectors/sql/Sqlite.js";
 export {default as Mysql} from "./connectors/sql/Mysql.js";
 export {default as Http} from "./connectors/web/Http.js";
+export {default as Fallback} from "./connectors/BubblingConnector.js";
 
 import Storable from "./utilities/Storable.js";
 import Collection from "./utilities/Collection.js";
 import Stub from "./utilities/Stub.js";
-import Type from "./utilities/Type.js";
 export {default as Storable} from "./utilities/Storable.js";
 export {default as Collection} from "./utilities/Collection.js";
 export {default as Stub} from "./utilities/Stub.js";
@@ -20,7 +21,8 @@ export default {
     Stub,
     Sqlite,
     Mysql,
-    Http
+    Http,
+    BubblingConnector
 }
 
 import DbRelation from "./types/Relation.js";
