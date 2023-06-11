@@ -43,7 +43,6 @@ export default class Http extends Connector {
             value: btoa(JSON.stringify(value))
         });
 
-        console.log(this.#host + '?' + params.toString());
         let response = await fetch(this.#host + '?' + params.toString(), {
             headers: this.#headers
         });
