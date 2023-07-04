@@ -37,5 +37,10 @@ export default class DbDateTime extends Type {
         if(typeof value === 'string' && DateTime.fromSQL(value).isValid){
             return DateTime.fromSQL(value);
         }
+
+        let date = new Date(value);
+        if(date instanceof Date && !isNaN(date)){
+            return DateTime.fromJSDate(date);
+        }
     }
 }
