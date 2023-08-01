@@ -25,6 +25,9 @@ export default class DbString extends Type {
      * @returns {string}
      */
     expand(value) {
+        if(value === null || value === undefined){
+            return null;
+        }
         return String(value);
     }
 }

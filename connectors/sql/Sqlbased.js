@@ -59,10 +59,11 @@ export default class SqlBased extends Connector {
     /**
      * @returns {Promise<void>}
      * @param models
+     * @param CreateTables
      */
-    async initializeModels(models){
+    async initializeModels(models, CreateTables = true){
         await super.initializeModels(models);
-        if(models[Symbol.iterator]){
+        if(models[Symbol.iterator] && CreateTables){
             for (const model of models) {
                 await this.initStore(model);
             }
