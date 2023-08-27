@@ -30,6 +30,11 @@ export default class DbDateTime extends Type {
      * @returns {DateTime}
      */
     expand(value) {
+
+        if(value === null){
+            return null;
+        }
+
         if(typeof value === 'string' && DateTime.fromISO(value).isValid){
             return DateTime.fromISO(value);
         }
