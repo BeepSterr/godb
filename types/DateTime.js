@@ -9,6 +9,11 @@ export default class DbDateTime extends Type {
      * @returns {string}
      */
     shrink(value){
+
+        if(value === null || value === undefined){
+            return null;
+        }
+
         if(value instanceof DateTime) {
             return value.toISO();
         }
@@ -31,7 +36,7 @@ export default class DbDateTime extends Type {
      */
     expand(value) {
 
-        if(value === null){
+        if(value === null || value === undefined){
             return null;
         }
 

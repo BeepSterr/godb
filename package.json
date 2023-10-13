@@ -1,7 +1,7 @@
 {
   "name": "@beepsdev/godb",
-  "version": "0.2.2",
-  "description": "database model management and enforcer",
+  "version": "0.3.0",
+  "description": "If cringe died then why are ORMS still around?",
   "main": "index.js",
   "type": "module",
   "publishConfig": {
