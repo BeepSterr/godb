@@ -46,6 +46,10 @@ export default class Storable {
 
     new = true;
 
+    /**
+     * @deprecated
+     * @param v
+     */
     set changed(v){
         console.warn("Deprecated: Storable.changed is deprecated, change tracking is now automatic. Force-save using db.save(object, true))");
     }
