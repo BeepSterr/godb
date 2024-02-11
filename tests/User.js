@@ -26,7 +26,6 @@ export default class User extends Storable {
     }
 
     set username(v){
-        this.changed = true;
         this.#username = v;
     }
 
@@ -36,7 +35,6 @@ export default class User extends Storable {
     }
 
     set email(v){
-        this.changed = true;
         this.#email = v;
     }
 

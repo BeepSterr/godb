@@ -178,6 +178,7 @@ export default class SqlBased extends Connector {
         return Model.defineColumns(this).find(c => c.field === 'deleted');
     }
 
+    /** @returns {Promise<Storable>} */
     async get(Model, Id, deleted = false){
 
         let deletedColumn = this.deletedColumn(Model);
@@ -347,9 +348,15 @@ export default class SqlBased extends Connector {
             object.new = false;
         }
 
-        if(object.afterSave && typeof object.afterSave === 'function' && !object._after_save_triggered){
+        const columns = object.constructor.defineColumns(this);
+
+        for(let cid in columns){
+            let column = columns[cid];
+            object._ogstate[column.name] = object[column.name];
+        }
+
+        if(object.afterSave && typeof object.afterSave === 'function'){
             await object.afterSave();
-            object._after_save_triggered = true;
         }
 
         return true;

@@ -29,7 +29,6 @@ export default class UserNote extends Storable {
     }
 
     set note(v){
-        this.changed = true;
         this.#note = v;
     }
 
@@ -40,7 +39,6 @@ export default class UserNote extends Storable {
     }
 
     set user(v){
-        this.changed = true;
         this.#user = v;
     }
 

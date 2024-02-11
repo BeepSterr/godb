@@ -10,6 +10,10 @@ export default class Storable {
         return 'model';
     }
 
+    _ogstate = {};
+
+    #connector;
+
     static generateID(){
 
         const now = Math.floor(new Date().getTime() / 100).toString(36);
@@ -44,11 +48,30 @@ export default class Storable {
 
     #changed = false;
     set changed(v){
-        this.#changed = !!v;
+        console.warn("Deprecated: Storable.changed is deprecated, change tracking is now automatic. Force-save using db.save(object, true))");
     }
 
     get changed(){
-        return this.#changed;
+
+        return new Promise(async (resolve, reject) => {
+
+            const columns = this.constructor.defineColumns(this.#connector);
+
+            for(let cid in columns){
+                let column = columns[cid];
+
+                const parser = new column.type(this.#connector);
+                let original = await parser.shrink(this._ogstate[column.field]);
+                let current = await parser.shrink(this[column.field]);
+
+                if(original !== current){
+                    resolve(true);
+                }
+            }
+
+            resolve(false);
+
+        });
     }
 
     #id = null;
@@ -97,17 +120,20 @@ export default class Storable {
         }
     }
 
+
     static async fromResultSet(resultSet, Connector){
 
         let x = new this;
         x.new = false;
 
+        x.#connector = Connector;
         const columns = this.defineColumns(Connector);
 
         for(let cid in columns){
             let column = columns[cid];
             const expander = new column.type(Connector);
             x[column.field] = await expander.expand(resultSet[column.name]);
+            x._ogstate[column.field] = await expander.expand(resultSet[column.name]);
         }
 
         return x;
