@@ -106,7 +106,7 @@ export default class Http extends Connector {
         })
 
         if(object.afterSave && typeof object.afterSave === 'function'){
-            await object.afterSave();
+            await object.afterSave(this);
         }
 
         return true;
