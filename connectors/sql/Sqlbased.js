@@ -347,8 +347,9 @@ export default class SqlBased extends Connector {
             object.new = false;
         }
 
-        if(object.afterSave && typeof object.afterSave === 'function'){
+        if(object.afterSave && typeof object.afterSave === 'function' && !object._after_save_triggered){
             await object.afterSave();
+            object._after_save_triggered = true;
         }
 
         return true;
