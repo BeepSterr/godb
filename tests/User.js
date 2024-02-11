@@ -7,7 +7,6 @@ export default class User extends Storable {
         return 'users';
     }
 
-
     /**
      *
      * @param Connector ../base.js
@@ -16,6 +15,7 @@ export default class User extends Storable {
     static defineColumns(Connector){
         return [
             { name: 'username', field: 'username', type: DbString, primary: false },
+            { name: 'email', field: 'email', type: DbString, primary: false, nullable: true },
             ...super.defineColumns(Connector)
         ];
     }
@@ -29,7 +29,7 @@ export default class User extends Storable {
         this.#username = v;
     }
 
-    #email;
+    #email = null;
     get email(){
         return this.#email;
     }

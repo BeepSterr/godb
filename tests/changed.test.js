@@ -20,7 +20,7 @@ for( let model of models){
     await test_sqlite.connection.schema.dropTable(model.table);
 }
 
-await test_sqlite.initializeModels([User, UserNote]);
+await test_sqlite.initializeModels([User, UserNote], true);
 
 describe('Storable Changed', () => {
 
@@ -33,6 +33,14 @@ describe('Storable Changed', () => {
         let user = new User();
         user.username = 'Someone';
         expect(await user.changed).toBe(true);
+    });
+
+    test('Is Field Changed', async () => {
+        let user = new User();
+        user.username = 'Someone';
+        user.email = user.email;
+        expect(await user.isFieldChanged('username')).toBe(true);
+        expect(await user.isFieldChanged('email')).toBe(false);
     });
 
     test('After Save', async () => {

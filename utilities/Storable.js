@@ -76,6 +76,17 @@ export default class Storable {
         });
     }
 
+    async isFieldChanged(field){
+        const columns = this.constructor.defineColumns(this.#connector);
+        let column = columns.find(c => c.field === field);
+
+        const parser = new column.type(this.#connector);
+        let original = await parser.shrink(this._ogstate[column.field]);
+        let current = await parser.shrink(this[column.field]);
+
+        return original !== current;
+    }
+
     #id = null;
     get id(){
         return this.#id;
