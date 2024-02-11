@@ -46,7 +46,6 @@ export default class Storable {
 
     new = true;
 
-    #changed = false;
     set changed(v){
         console.warn("Deprecated: Storable.changed is deprecated, change tracking is now automatic. Force-save using db.save(object, true))");
     }
@@ -80,7 +79,6 @@ export default class Storable {
     }
 
     set id(v){
-        this.changed = true;
         if(this.#id !== null){
             throw new IllegalModification(this, 'id');
         }
@@ -93,7 +91,6 @@ export default class Storable {
     }
 
     set createdon(v){
-        this.changed = true;
         this.#createdon = v;
     }
 
@@ -103,7 +100,6 @@ export default class Storable {
     }
 
     set updatedon(v){
-        this.changed = true;
         this.#updatedon = v;
     }
 
@@ -115,7 +111,6 @@ export default class Storable {
 
     set deleted(v){
         if(v !== this.#deleted){
-            this.changed = true;
             this.#deleted = !!v;
         }
     }
