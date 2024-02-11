@@ -55,7 +55,6 @@ export default class Storable {
     }
 
     get changed(){
-
         return new Promise(async (resolve, reject) => {
 
             const columns = this.constructor.defineColumns(this.#connector);

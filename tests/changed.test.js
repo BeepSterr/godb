@@ -13,6 +13,13 @@ let test_sqlite = new Sqlite({
     path: './test.db'
 });
 
+const models = [User, UserNote];
+
+// reset db
+for( let model of models){
+    await test_sqlite.connection.schema.dropTable(model.table);
+}
+
 await test_sqlite.initializeModels([User, UserNote]);
 
 describe('Storable Changed', () => {
@@ -47,8 +54,6 @@ describe('Storable Changed', () => {
         let user = new User();
         user.username = 'Someone';
         await test_sqlite.save(user);
-
-        /** @type {User} */
         let user2 = await test_sqlite.get(User, user.id);
         expect(await user2.changed).toBe(false);
     });

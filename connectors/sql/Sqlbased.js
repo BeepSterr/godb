@@ -304,8 +304,9 @@ export default class SqlBased extends Connector {
             throw new InvalidArgument(object, Storable);
         }
 
-        if(!object.changed && !force){
-            return false;
+        if(!force){
+            const isChanged = await object.changed;
+            if(!isChanged) return false;
         }
 
         let newValues = {}
