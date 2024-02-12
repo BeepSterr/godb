@@ -304,6 +304,12 @@ export default class SqlBased extends Connector {
             throw new InvalidArgument(object, Storable);
         }
 
+        if(object.beforeSave && typeof object.beforeSave === 'function'){
+            let result = await object.beforeSave();
+            if(result === false) return false;
+
+        }
+
         if(!force){
             const isChanged = await object.changed;
             if(!isChanged) return false;
