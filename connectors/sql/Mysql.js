@@ -31,6 +31,8 @@ export default class Mysql extends SqlBased {
         if(typeof opts.slowQueryLogger === 'function'){
             const slowQueryThreshold = opts.slowQueryThreshold || 200; // milliseconds
 
+            console.debug('Enabling slow query logger with a threshhold of', slowQueryThreshold)
+
             this.connection.on('query', (query) => {
                 query.startTime = Date.now(); // Record the start time of the query
             });
