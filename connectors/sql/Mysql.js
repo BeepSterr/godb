@@ -29,7 +29,7 @@ export default class Mysql extends SqlBased {
         });
 
         if(typeof opts.slowQueryLogger === 'function'){
-            const slowQueryThreshold = opts.slowQueryThreshold = opts.slowQueryThreshold || 200; // milliseconds
+            const slowQueryThreshold = opts.slowQueryThreshold || 200; // milliseconds
 
             this.connection.on('query', (query) => {
                 query.startTime = Date.now(); // Record the start time of the query
