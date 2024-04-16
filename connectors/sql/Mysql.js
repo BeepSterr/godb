@@ -18,7 +18,7 @@ export default class Mysql extends SqlBased {
                     debug(message) {
                         if (message.sql) {
                             const queryStartTime = process.hrtime.bigint(); // Get start time in nanoseconds
-                            this.client.raw(message.sql, message.bindings).then(() => {
+                            this.connection.raw(message.sql, message.bindings).then(() => {
                                 const queryEndTime = process.hrtime.bigint(); // Get end time in nanoseconds
                                 const queryDuration = Number(queryEndTime - queryStartTime) / 1e6; // Convert to milliseconds
                                 if (queryDuration > 200) { // Define your threshold for slow queries
