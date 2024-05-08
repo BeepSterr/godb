@@ -1,5 +1,4 @@
-
-class InvalidArgumentException extends Error {
+export class InvalidArgument extends Error {
     constructor(model, type){
         super();
         this.name = this.constructor.name;
@@ -8,7 +7,7 @@ class InvalidArgumentException extends Error {
     }
 }
 
-class IllegalModificationException extends Error {
+export class IllegalModification extends Error {
     constructor(model, field){
         super();
         this.name = this.constructor.name;
@@ -17,7 +16,7 @@ class IllegalModificationException extends Error {
     }
 }
 
-class InvalidConnectorException extends Error {
+export class InvalidConnector extends Error {
     constructor(model){
         super();
         this.name = this.constructor.name;
@@ -26,7 +25,7 @@ class InvalidConnectorException extends Error {
     }
 }
 
-class InvalidCollectionEntry extends Error {
+export class InvalidCollectionEntry extends Error {
     constructor(data){
         super();
         this.name = this.constructor.name;
@@ -35,7 +34,7 @@ class InvalidCollectionEntry extends Error {
     }
 }
 
-class InvalidCollectionType extends Error {
+export class InvalidCollectionType extends Error {
     constructor(type){
         super();
         this.name = this.constructor.name;
@@ -44,10 +43,11 @@ class InvalidCollectionType extends Error {
     }
 }
 
-module.exports = {
-    InvalidArgumentError: InvalidArgumentException,
-    InvalidConnectorException,
-    InvalidCollectionEntry,
-    InvalidCollectionType,
-    IllegalModificationException
+export class InvalidDataTypeError extends Error {
+    constructor(type){
+        super();
+        this.name = this.constructor.name;
+        this.message = `Tried to use a invalid type, or type not supported (${type})`;
+        Error.captureStackTrace(this, this.constructor);
+    }
 }

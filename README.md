@@ -5,7 +5,10 @@ no, it's not for go. it's js.
 
 ![](https://i.imgur.com/7ihmQW2.png)
 
-
+## Supported Connectors
+- Sqlite
+- MySQL
+- Http
 
 ## Model Example
 ```js

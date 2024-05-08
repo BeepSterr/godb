@@ -1,5 +1,12 @@
-const Collection = require('../utilities/Collection');
-const User = require("./User");
+/*
+
+    TODO: Fix tests when jest supports es6 properly.
+
+ */
+
+import {Collection} from '../index.js';
+import User from "./User.js"
+import {describe, test, expect} from '@jest/globals';
 
 class CorrectType {
     static a = 0;

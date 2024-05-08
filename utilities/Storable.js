@@ -1,19 +1,33 @@
-const {IllegalModificationException} = require("./Errors");
-module.exports = class Storable {
+import {IllegalModification} from "./Errors.js";;
+import DbString from "../types/String.js";
+import DbDateTime from "../types/DateTime.js";
+import DbBoolean from "../types/Boolean.js";
+import Stub from "./Stub.js";
+
+export default class Storable {
 
     static get table(){
         return 'model';
     }
 
+    _ogstate = {};
+
+    #connector;
+
     static generateID(){
-        const { customAlphabet } = require('nanoid');
-        const alphabet = '0123456789abcdefghjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const nanoid = customAlphabet(alphabet, 16);
-        return nanoid();
+
+        const now = Math.floor(new Date().getTime() / 100).toString(36);
+        const node = process.pid.toString(36);
+
+        const rnd1 = Math.floor(Math.random() * 10000000000).toString(36);
+        const rnd2 = Math.floor(Math.random() * 10000000000000).toString(36);
+        const rnd3 = Math.floor(Math.random() * 10000000000).toString(36);
+
+        return `${now}-${node}-${rnd1}-${rnd2}-${rnd3}`;
     }
 
     static get idType(){
-        return "string"
+        return DbString;
     }
 
     /**
@@ -23,20 +37,54 @@ module.exports = class Storable {
      */
     static defineColumns(Connector){
         return [
-            { name: 'id', field: 'id',type: Connector.types[this.idType], primary: true },
-            { name: 'createdon', field: 'createdon',type: Connector.types.date },
-            { name: 'updatedon', field: 'updatedon',type: Connector.types.date },
-            { name: 'deleted', field: 'deleted',type: Connector.types.boolean, nullable: true},
+            { name: 'id', field: 'id',type: this.idType, primary: true },
+            { name: 'createdon', field: 'createdon',type: DbDateTime },
+            { name: 'updatedon', field: 'updatedon',type: DbDateTime },
+            { name: 'deleted', field: 'deleted',type: DbBoolean, nullable: false},
         ];
     }
 
-    #changed = false;
+    new = true;
+
+    /**
+     * @deprecated
+     * @param v
+     */
     set changed(v){
-        this.#changed = !!v;
+        console.warn("Deprecated: Storable.changed is deprecated, change tracking is now automatic. Force-save using db.save(object, true))");
     }
 
     get changed(){
-        return this.#changed;
+        return new Promise(async (resolve, reject) => {
+
+            const columns = this.constructor.defineColumns(this.#connector);
+
+            for(let cid in columns){
+                let column = columns[cid];
+
+                const parser = new column.type(this.#connector);
+                let original = await parser.shrink(this._ogstate[column.field]);
+                let current = await parser.shrink(this[column.field]);
+
+                if(original !== current){
+                    resolve(true);
+                }
+            }
+
+            resolve(false);
+
+        });
+    }
+
+    async isFieldChanged(field){
+        const columns = this.constructor.defineColumns(this.#connector);
+        let column = columns.find(c => c.field === field);
+
+        const parser = new column.type(this.#connector);
+        let original = await parser.shrink(this._ogstate[column.field]);
+        let current = await parser.shrink(this[column.field]);
+
+        return original !== current;
     }
 
     #id = null;
@@ -45,9 +93,8 @@ module.exports = class Storable {
     }
 
     set id(v){
-        this.changed = true;
         if(this.#id !== null){
-            throw new IllegalModificationException(this, 'id');
+            throw new IllegalModification(this, 'id');
         }
         this.#id = v;
     }
@@ -58,7 +105,6 @@ module.exports = class Storable {
     }
 
     set createdon(v){
-        this.changed = true;
         this.#createdon = v;
     }
 
@@ -68,36 +114,42 @@ module.exports = class Storable {
     }
 
     set updatedon(v){
-        this.changed = true;
         this.#updatedon = v;
     }
 
 
-    #deleted = false;
+    #deleted = 0;
     get deleted(){
         return this.#deleted;
     }
 
     set deleted(v){
         if(v !== this.#deleted){
-            this.changed = true;
             this.#deleted = !!v;
         }
     }
 
+
     static async fromResultSet(resultSet, Connector){
 
         let x = new this;
+        x.new = false;
+
+        x.#connector = Connector;
         const columns = this.defineColumns(Connector);
 
         for(let cid in columns){
             let column = columns[cid];
-            if(column && column.type){
-                x[column.field] = await column.type.expander(resultSet[column.name]);
-            }
+            const expander = new column.type(Connector);
+            x[column.field] = await expander.expand(resultSet[column.name]);
+            x._ogstate[column.field] = await expander.expand(resultSet[column.name]);
         }
 
         return x;
+    }
+
+    toRelation(){
+        return `{${this.constructor.table}/${this.id}}`
     }
 
     toString(){

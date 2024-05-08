@@ -1,13 +1,14 @@
 {
   "name": "@beepsdev/godb",
-  "version": "0.2.0",
-  "description": "database model management and enforcer",
+  "version": "0.3.1",
+  "description": "If cringe died then why are ORMS still around?",
   "main": "index.js",
+  "type": "module",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "test": "jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --detectOpenHandles"
   },
   "repository": {
     "type": "git",
@@ -20,10 +21,14 @@
   },
   "homepage": "https://github.com/beepsdev/godb#readme",
   "dependencies": {
-    "knex": "^1.0.3",
-    "nanoid": "^3.1.31"
+    "knex": "^2.3.0",
+    "luxon": "^3.1.1"
   },
   "devDependencies": {
-    "jest": "^27.4.7"
+    "@jest/globals": "^29.7.0",
+    "jest": "^27.4.7",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
+    "sqlite3": "^5.1.2"
   }
 }
