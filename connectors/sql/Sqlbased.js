@@ -151,8 +151,16 @@ export default class SqlBased extends Connector {
             //     col.index(`idx${column.index}`);
             // }
 
-            if(instance[column.name] !== undefined && column.default !== false){
-                col.default(new Model()[column.name]);
+            // mysql doesn't support default values for json columns (sad!)
+            // TODO: Defaults suck all around, find a better way to handle this, Maybe move back to defining defaults in the model.
+            if(instance[column.name] !== undefined && column.default !== false && column.type !== DbJson){
+
+                if(column.type === DbBoolean) {
+                    col.defaultTo(column.default ? 1 : 0);
+                }else{
+                    col.default(new Model()[column.name]);
+                }
+
             }
 
             // TODO: find a way to only add the index if it does not exist.
@@ -206,7 +214,8 @@ export default class SqlBased extends Connector {
     async find(Model, Where, deleted = false){
 
         let q = this.connection.table(Model.table).queryContext({ model: Model, db: this});
-        if(!deleted){
+
+        if(!deleted && Model.defineColumns(this).find( x => x.name === 'deleted')){
             q = q.andWhere('deleted', 0);
         }
         Where.forEach( w => {
