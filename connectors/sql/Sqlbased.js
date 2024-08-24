@@ -364,13 +364,6 @@ export default class SqlBased extends Connector {
 
         }
 
-        const columns = object.constructor.defineColumns(this);
-
-        for(let cid in columns){
-            let column = columns[cid];
-            object._ogstate[column.name] = object[column.name];
-        }
-
         if(object.new){
             if(object.afterCreate && typeof object.afterCreate === 'function'){
                 await object.afterCreate();
@@ -381,6 +374,13 @@ export default class SqlBased extends Connector {
 
         if(object.afterSave && typeof object.afterSave === 'function'){
             await object.afterSave();
+        }
+
+        const columns = object.constructor.defineColumns(this);
+
+        for(let cid in columns){
+            let column = columns[cid];
+            object._ogstate[column.name] = object[column.name];
         }
 
         return true;
