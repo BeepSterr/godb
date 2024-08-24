@@ -361,6 +361,7 @@ export default class SqlBased extends Connector {
             await this.connection.table(object.constructor.table)
                 .insert(newValues);
 
+
         }
 
         const columns = object.constructor.defineColumns(this);
@@ -370,11 +371,18 @@ export default class SqlBased extends Connector {
             object._ogstate[column.name] = object[column.name];
         }
 
+        if(object.new){
+            if(object.afterCreate && typeof object.afterCreate === 'function'){
+                await object.afterCreate();
+            }
+        }
+
+        object.new = false;
+
         if(object.afterSave && typeof object.afterSave === 'function'){
             await object.afterSave();
         }
 
-        object.new = false;
         return true;
 
     }
